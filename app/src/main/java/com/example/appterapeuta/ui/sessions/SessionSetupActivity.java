@@ -1,6 +1,7 @@
 package com.example.appterapeuta.ui.sessions;
 
 import android.os.Bundle;
+import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,5 +23,7 @@ public class SessionSetupActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        Button backButton = findViewById(R.id.back_button);
+        backButton.setOnClickListener(v -> finish());
     }
 }

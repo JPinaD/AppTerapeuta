@@ -7,6 +7,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import android.content.Intent;
+
+import com.example.appterapeuta.ui.profiles.StudentProfileListActivity;
+import com.example.appterapeuta.ui.robots.RobotListActivity;
+import com.example.appterapeuta.ui.sessions.SessionSetupActivity;
+import com.google.android.material.card.MaterialCardView;
+
 
 import com.example.appterapeuta.R;
 
@@ -21,6 +28,22 @@ public class MainDashboardActivity extends AppCompatActivity {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
+        });
+
+        MaterialCardView cardRobot = findViewById(R.id.card_robot);
+        MaterialCardView cardStudent = findViewById(R.id.card_student);
+        MaterialCardView cardSession = findViewById(R.id.card_session);
+
+        cardRobot.setOnClickListener(v -> {
+            startActivity(new Intent(this, RobotListActivity.class));
+        });
+
+        cardStudent.setOnClickListener(v -> {
+            startActivity(new Intent(this, StudentProfileListActivity.class));
+        });
+
+        cardSession.setOnClickListener(v -> {
+            startActivity(new Intent(this, SessionSetupActivity.class));
         });
     }
 }

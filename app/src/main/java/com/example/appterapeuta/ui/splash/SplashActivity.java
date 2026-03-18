@@ -7,8 +7,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.example.appterapeuta.R;
+import com.example.appterapeuta.ui.login.LoginActivity;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -22,5 +26,10 @@ public class SplashActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        }, 2000);
     }
 }
