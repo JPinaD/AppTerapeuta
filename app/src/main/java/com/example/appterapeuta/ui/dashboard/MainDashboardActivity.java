@@ -8,7 +8,9 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import android.content.Intent;
+import android.widget.Button;
 
+import com.example.appterapeuta.ui.activities.ActivityCatalogActivity;
 import com.example.appterapeuta.ui.profiles.StudentProfileListActivity;
 import com.example.appterapeuta.ui.robots.RobotListActivity;
 import com.example.appterapeuta.ui.sessions.SessionSetupActivity;
@@ -33,17 +35,15 @@ public class MainDashboardActivity extends AppCompatActivity {
         MaterialCardView cardRobot = findViewById(R.id.card_robot);
         MaterialCardView cardStudent = findViewById(R.id.card_student);
         MaterialCardView cardSession = findViewById(R.id.card_session);
+        MaterialCardView cardActivityCatalog = findViewById(R.id.card_activity_catalog);
 
-        cardRobot.setOnClickListener(v -> {
-            startActivity(new Intent(this, RobotListActivity.class));
-        });
+        cardRobot.setOnClickListener(v -> startActivity(new Intent(this, RobotListActivity.class)));
+        cardStudent.setOnClickListener(v -> startActivity(new Intent(this, StudentProfileListActivity.class)));
+        cardSession.setOnClickListener(v -> startActivity(new Intent(this, SessionSetupActivity.class)));
+        cardActivityCatalog.setOnClickListener(v -> startActivity(new Intent(this, ActivityCatalogActivity.class)));
 
-        cardStudent.setOnClickListener(v -> {
-            startActivity(new Intent(this, StudentProfileListActivity.class));
-        });
-
-        cardSession.setOnClickListener(v -> {
-            startActivity(new Intent(this, SessionSetupActivity.class));
-        });
+        // Botón de volver atrás
+        Button backButton = findViewById(R.id.back_button);
+        backButton.setOnClickListener(v -> finish());
     }
 }

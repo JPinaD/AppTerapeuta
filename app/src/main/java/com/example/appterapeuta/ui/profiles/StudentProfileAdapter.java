@@ -4,19 +4,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.appterapeuta.*;
-
 import com.example.appterapeuta.R;
+import com.example.appterapeuta.data.model.StudentProfile;
 
 import java.util.List;
 
 public class StudentProfileAdapter extends RecyclerView.Adapter<StudentProfileAdapter.StudentViewHolder> {
-    private final List<String> students;
 
-    public StudentProfileAdapter(List<String> students) {
+    private final List<StudentProfile> students;
+
+    public StudentProfileAdapter(List<StudentProfile> students) {
         this.students = students;
     }
 
@@ -30,7 +31,10 @@ public class StudentProfileAdapter extends RecyclerView.Adapter<StudentProfileAd
 
     @Override
     public void onBindViewHolder(@NonNull StudentViewHolder holder, int position) {
-        holder.studentName.setText(students.get(position));
+        StudentProfile student = students.get(position);
+        holder.tvStudentName.setText(student.name);
+        holder.tvStudentAvatar.setText(student.avatar);
+        holder.tvStudentNeeds.setText(student.educationalNeeds);
     }
 
     @Override
@@ -38,12 +42,16 @@ public class StudentProfileAdapter extends RecyclerView.Adapter<StudentProfileAd
         return students.size();
     }
 
-    static class StudentViewHolder extends RecyclerView.ViewHolder {
-        TextView studentName;
-        StudentViewHolder(View itemView) {
+    public static class StudentViewHolder extends RecyclerView.ViewHolder {
+        TextView tvStudentName;
+        TextView tvStudentAvatar;
+        TextView tvStudentNeeds;
+
+        public StudentViewHolder(@NonNull View itemView) {
             super(itemView);
-            studentName = itemView.findViewById(R.id.student_name);
+            tvStudentName = itemView.findViewById(R.id.student_name);
+            tvStudentAvatar = itemView.findViewById(R.id.student_avatar);
+            tvStudentNeeds = itemView.findViewById(R.id.student_needs);
         }
     }
 }
-

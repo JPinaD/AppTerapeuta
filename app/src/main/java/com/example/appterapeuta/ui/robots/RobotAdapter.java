@@ -9,13 +9,14 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appterapeuta.R;
+import com.example.appterapeuta.data.model.Robot;
 
 import java.util.List;
 
 public class RobotAdapter extends RecyclerView.Adapter<RobotAdapter.RobotViewHolder> {
-    private final List<String> robots;
+    private final List<Robot> robots;
 
-    public RobotAdapter(List<String> robots) {
+    public RobotAdapter(List<Robot> robots) {
         this.robots = robots;
     }
 
@@ -29,7 +30,13 @@ public class RobotAdapter extends RecyclerView.Adapter<RobotAdapter.RobotViewHol
 
     @Override
     public void onBindViewHolder(@NonNull RobotViewHolder holder, int position) {
-        holder.robotName.setText(robots.get(position));
+        Robot robot = robots.get(position);
+        holder.robotName.setText(robot.name);
+        holder.robotMac.setText(robot.macAddress);
+        holder.robotStatus.setText(robot.isConnected ? "Conectado" : "Desconectado");
+        holder.robotBattery.setText(
+            holder.itemView.getContext().getString(R.string.robot_battery, robot.batteryLevel)
+        );
     }
 
     @Override
@@ -37,12 +44,17 @@ public class RobotAdapter extends RecyclerView.Adapter<RobotAdapter.RobotViewHol
         return robots.size();
     }
 
-    static class RobotViewHolder extends RecyclerView.ViewHolder {
+    public static class RobotViewHolder extends RecyclerView.ViewHolder {
         TextView robotName;
+        TextView robotMac;
+        TextView robotStatus;
+        TextView robotBattery;
         RobotViewHolder(View itemView) {
             super(itemView);
             robotName = itemView.findViewById(R.id.robot_name);
+            robotMac = itemView.findViewById(R.id.robot_mac);
+            robotStatus = itemView.findViewById(R.id.robot_status);
+            robotBattery = itemView.findViewById(R.id.robot_battery);
         }
     }
 }
-

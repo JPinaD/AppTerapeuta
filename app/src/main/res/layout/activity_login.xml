@@ -17,16 +17,16 @@
 
         <Button
             android:id="@+id/back_button"
-            android:layout_width="48dp"
+            android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:text="←"
-            android:contentDescription="Volver atrás"
+            android:text="@string/back_text"
+            android:contentDescription="@string/back_content_desc"
             android:minHeight="48dp"
-            android:minWidth="48dp"
+            android:minWidth="96dp"
             android:layout_marginBottom="16dp"
-            android:layout_gravity="start"
             android:backgroundTint="@color/design_default_color_primary"
-            android:textSize="24sp"/>
+            android:textSize="18sp"
+            tools:ignore="MissingConstraints" />
 
         <EditText
             android:id="@+id/username"

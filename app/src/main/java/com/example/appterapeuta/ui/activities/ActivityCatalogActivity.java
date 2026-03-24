@@ -1,26 +1,35 @@
 package com.example.appterapeuta.ui.activities;
 
 import android.os.Bundle;
+import android.widget.Button;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appterapeuta.R;
+import com.example.appterapeuta.data.model.TherapyActivity;
+import com.example.appterapeuta.util.MockDataProvider;
+
+import java.util.List;
 
 public class ActivityCatalogActivity extends AppCompatActivity {
+
+    private RecyclerView rvActivities;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_catalog);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+
+        rvActivities = findViewById(R.id.rvActivities);
+
+        List<TherapyActivity> activities = MockDataProvider.getMockActivities();
+
+        rvActivities.setLayoutManager(new LinearLayoutManager(this));
+        rvActivities.setAdapter(new ActivityCatalogAdapter(activities));
+
+        Button backButton = findViewById(R.id.back_button);
+        backButton.setOnClickListener(v -> finish());
     }
 }

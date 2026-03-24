@@ -12,8 +12,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appterapeuta.R;
+import com.example.appterapeuta.util.MockDataProvider;
+import com.example.appterapeuta.data.model.Robot;
 
-import java.util.Arrays;
+import java.util.List;
 
 public class RobotListActivity extends AppCompatActivity {
 
@@ -30,9 +32,9 @@ public class RobotListActivity extends AppCompatActivity {
 
         RecyclerView recyclerView = findViewById(R.id.robot_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new RobotAdapter(
-                Arrays.asList("Robot 1", "Robot 2", "Robot 3", "Robot 4")
-        ));
+
+        List<Robot> robots = MockDataProvider.getMockRobots();
+        recyclerView.setAdapter(new RobotAdapter(robots));
 
         Button backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(v -> finish());

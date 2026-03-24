@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.example.appterapeuta.R;
 import com.example.appterapeuta.ui.dashboard.MainDashboardActivity;
+import com.example.appterapeuta.ui.splash.SplashActivity;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -44,7 +45,13 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
         Button backButton = findViewById(R.id.back_button);
-        backButton.setOnClickListener(v -> finish());
+        backButton.setOnClickListener(v -> {
+
+            Intent intent = new Intent(LoginActivity.this, SplashActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            finish();
+        });
 
     }
 }

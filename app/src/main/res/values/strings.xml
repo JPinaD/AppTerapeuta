@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">AppTerapeuta</string>
+    <string name="robot_battery">Batería: %1$d%%</string>
+    <string name="back_arrow">&#8592;</string>
+    <string name="back_content_desc">Volver atrás</string>
+    <string name="robots">Robots</string>
+    <string name="students">Estudiantes</string>
+    <string name="sessions">Sesiones</string>
+    <string name="activity_catalog">Catálogo de actividades</string>
+    <string name="student_name">Alumno</string>
+    <string name="student_avatar">Avatar</string>
+    <string name="student_needs">Necesidades</string>
+    <string name="back_text">Volver</string>
 </resources>
