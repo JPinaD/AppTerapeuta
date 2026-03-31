@@ -16,13 +16,6 @@
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/robot_mac"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="MAC"
-        android:layout_marginTop="4dp" />
-
-    <TextView
         android:id="@+id/robot_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

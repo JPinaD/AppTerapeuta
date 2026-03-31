@@ -1,5 +1,6 @@
 package com.example.appterapeuta.ui.dashboard;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -15,7 +16,6 @@ import com.example.appterapeuta.ui.profiles.StudentProfileListActivity;
 import com.example.appterapeuta.ui.robots.RobotListActivity;
 import com.example.appterapeuta.ui.sessions.SessionSetupActivity;
 import com.google.android.material.card.MaterialCardView;
-
 
 import com.example.appterapeuta.R;
 
@@ -42,7 +42,6 @@ public class MainDashboardActivity extends AppCompatActivity {
         cardSession.setOnClickListener(v -> startActivity(new Intent(this, SessionSetupActivity.class)));
         cardActivityCatalog.setOnClickListener(v -> startActivity(new Intent(this, ActivityCatalogActivity.class)));
 
-        // Botón de volver atrás
         Button backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(v -> finish());
     }
