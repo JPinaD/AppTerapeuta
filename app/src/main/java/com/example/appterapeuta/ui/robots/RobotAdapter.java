@@ -9,16 +9,22 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appterapeuta.R;
-import com.example.appterapeuta.data.model.Robot;
+import com.example.appterapeuta.data.model.DiscoveredRobot;
 
 import java.util.List;
 
 public class RobotAdapter extends RecyclerView.Adapter<RobotAdapter.RobotViewHolder> {
 
-    private final List<Robot> robots;
+    public interface OnRobotClickListener {
+        void onRobotClick(DiscoveredRobot robot);
+    }
 
-    public RobotAdapter(List<Robot> robots) {
+    private final List<DiscoveredRobot> robots;
+    private final OnRobotClickListener clickListener;
+
+    public RobotAdapter(List<DiscoveredRobot> robots, OnRobotClickListener clickListener) {
         this.robots = robots;
+        this.clickListener = clickListener;
     }
 
     @NonNull
@@ -31,12 +37,11 @@ public class RobotAdapter extends RecyclerView.Adapter<RobotAdapter.RobotViewHol
 
     @Override
     public void onBindViewHolder(@NonNull RobotViewHolder holder, int position) {
-        Robot robot = robots.get(position);
-        holder.robotName.setText(robot.name);
-        holder.robotStatus.setText(robot.isConnected ? "Conectado" : "Desconectado");
-        holder.robotBattery.setText(
-                holder.itemView.getContext().getString(R.string.robot_battery, robot.batteryLevel)
-        );
+        DiscoveredRobot robot = robots.get(position);
+        holder.robotName.setText(robot.serviceName);
+        holder.robotStatus.setText(R.string.robot_status_detected);
+        holder.robotBattery.setText(robot.host + ":" + robot.port);
+        holder.itemView.setOnClickListener(v -> clickListener.onRobotClick(robot));
     }
 
     @Override
