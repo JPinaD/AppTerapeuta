@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,18 +16,20 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appterapeuta.R;
 import com.example.appterapeuta.data.model.DiscoveredRobot;
+import com.example.appterapeuta.data.model.RobotConnection;
 import com.example.appterapeuta.viewmodel.RobotViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class RobotListActivity extends AppCompatActivity {
 
     private RobotViewModel viewModel;
     private RobotAdapter adapter;
     private final List<DiscoveredRobot> robotList = new ArrayList<>();
+    private Map<String, RobotConnection> currentConnections;
     private TextView emptyView;
-    private TextView tvConnectionStatus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,33 +43,18 @@ public class RobotListActivity extends AppCompatActivity {
         });
 
         emptyView = findViewById(R.id.empty_view);
-        tvConnectionStatus = findViewById(R.id.tv_connection_status);
 
         RecyclerView recyclerView = findViewById(R.id.robot_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new RobotAdapter(robotList, this::onRobotSelected);
+        adapter = new RobotAdapter(robotList, this::onRobotSelected, () -> currentConnections);
         recyclerView.setAdapter(adapter);
 
         viewModel = new ViewModelProvider(this).get(RobotViewModel.class);
         viewModel.getDiscoveredRobots().observe(this, this::updateList);
-        viewModel.getConnectionState().observe(this, state -> {
-            switch (state) {
-                case CONNECTING:
-                    tvConnectionStatus.setText(R.string.connection_status_connecting);
-                    break;
-                case CONNECTED:
-                    tvConnectionStatus.setText(R.string.connection_status_connected);
-                    break;
-                case ERROR:
-                    tvConnectionStatus.setText(R.string.connection_status_error);
-                    break;
-                default:
-                    tvConnectionStatus.setText("");
-                    break;
-            }
+        viewModel.getRobotConnections().observe(this, connections -> {
+            currentConnections = connections;
+            adapter.notifyDataSetChanged();
         });
-        viewModel.getLastPongReceived().observe(this, pong ->
-                Toast.makeText(this, R.string.pong_received, Toast.LENGTH_SHORT).show());
 
         Button backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(v -> finish());
@@ -94,6 +80,11 @@ public class RobotListActivity extends AppCompatActivity {
     }
 
     private void onRobotSelected(DiscoveredRobot robot) {
-        viewModel.connectToRobot(robot);
+        RobotConnection conn = currentConnections != null ? currentConnections.get(robot.robotId) : null;
+        if (conn != null && conn.state == com.example.appterapeuta.data.model.ConnectionState.CONNECTED) {
+            viewModel.disconnect(robot.robotId);
+        } else {
+            viewModel.connect(robot);
+        }
     }
 }

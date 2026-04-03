@@ -8,6 +8,8 @@ import android.util.Log;
 import com.example.appterapeuta.data.model.DiscoveredRobot;
 import com.example.appterapeuta.util.AppConstants;
 
+import java.util.Map;
+
 public class NsdDiscoveryManager {
 
     public interface OnRobotDiscoveredListener {
@@ -83,7 +85,13 @@ public class NsdDiscoveryManager {
                 resolving = false;
                 if (listener == null) return;
                 String host = info.getHost().getHostAddress();
-                listener.onRobotFound(new DiscoveredRobot(info.getServiceName(), host, info.getPort()));
+                String robotId = null;
+                Map<String, byte[]> attrs = info.getAttributes();
+                if (attrs != null && attrs.containsKey(AppConstants.NSD_ATTR_ROBOT_ID)) {
+                    byte[] val = attrs.get(AppConstants.NSD_ATTR_ROBOT_ID);
+                    if (val != null) robotId = new String(val);
+                }
+                listener.onRobotFound(new DiscoveredRobot(info.getServiceName(), host, info.getPort(), robotId));
             }
         });
     }
