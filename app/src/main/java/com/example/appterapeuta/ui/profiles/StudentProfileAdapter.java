@@ -9,16 +9,19 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appterapeuta.R;
-import com.example.appterapeuta.data.model.StudentProfile;
+import com.example.appterapeuta.data.local.entity.StudentProfileEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class StudentProfileAdapter extends RecyclerView.Adapter<StudentProfileAdapter.StudentViewHolder> {
 
-    private final List<StudentProfile> students;
+    private final List<StudentProfileEntity> students = new ArrayList<>();
 
-    public StudentProfileAdapter(List<StudentProfile> students) {
-        this.students = students;
+    public void setStudents(List<StudentProfileEntity> list) {
+        students.clear();
+        if (list != null) students.addAll(list);
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -31,7 +34,7 @@ public class StudentProfileAdapter extends RecyclerView.Adapter<StudentProfileAd
 
     @Override
     public void onBindViewHolder(@NonNull StudentViewHolder holder, int position) {
-        StudentProfile student = students.get(position);
+        StudentProfileEntity student = students.get(position);
         holder.tvStudentName.setText(student.name);
         holder.tvStudentAvatar.setText(student.avatar);
         holder.tvStudentNeeds.setText(student.educationalNeeds);
@@ -43,13 +46,11 @@ public class StudentProfileAdapter extends RecyclerView.Adapter<StudentProfileAd
     }
 
     public static class StudentViewHolder extends RecyclerView.ViewHolder {
-        TextView tvStudentName;
-        TextView tvStudentAvatar;
-        TextView tvStudentNeeds;
+        TextView tvStudentName, tvStudentAvatar, tvStudentNeeds;
 
         public StudentViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvStudentName = itemView.findViewById(R.id.student_name);
+            tvStudentName  = itemView.findViewById(R.id.student_name);
             tvStudentAvatar = itemView.findViewById(R.id.student_avatar);
             tvStudentNeeds = itemView.findViewById(R.id.student_needs);
         }

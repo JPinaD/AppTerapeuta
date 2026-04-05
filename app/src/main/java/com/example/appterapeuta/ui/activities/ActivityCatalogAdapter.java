@@ -4,22 +4,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appterapeuta.R;
-import com.example.appterapeuta.data.model.TherapyActivity;
+import com.example.appterapeuta.data.local.entity.TherapyActivityEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ActivityCatalogAdapter extends RecyclerView.Adapter<ActivityCatalogAdapter.ActivityViewHolder> {
 
-    private final List<TherapyActivity> activities;
+    private final List<TherapyActivityEntity> activities = new ArrayList<>();
 
-    public ActivityCatalogAdapter(List<TherapyActivity> activities) {
-        this.activities = activities;
+    public void setActivities(List<TherapyActivityEntity> list) {
+        activities.clear();
+        if (list != null) activities.addAll(list);
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -31,15 +33,10 @@ public class ActivityCatalogAdapter extends RecyclerView.Adapter<ActivityCatalog
 
     @Override
     public void onBindViewHolder(@NonNull ActivityViewHolder holder, int position) {
-        TherapyActivity activity = activities.get(position);
-
+        TherapyActivityEntity activity = activities.get(position);
         holder.tvActivityName.setText(activity.name);
         holder.tvActivityDescription.setText(activity.description);
         holder.tvActivityDifficulty.setText("Dificultad: " + activity.difficulty);
-
-        holder.itemView.setOnClickListener(v ->
-                Toast.makeText(v.getContext(), "Actividad: " + activity.name, Toast.LENGTH_SHORT).show()
-        );
     }
 
     @Override
@@ -50,11 +47,11 @@ public class ActivityCatalogAdapter extends RecyclerView.Adapter<ActivityCatalog
     static class ActivityViewHolder extends RecyclerView.ViewHolder {
         TextView tvActivityName, tvActivityDescription, tvActivityDifficulty;
 
-        public ActivityViewHolder(@NonNull View itemView) {
+        ActivityViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvActivityName = itemView.findViewById(R.id.tvActivityName);
+            tvActivityName        = itemView.findViewById(R.id.tvActivityName);
             tvActivityDescription = itemView.findViewById(R.id.tvActivityDescription);
-            tvActivityDifficulty = itemView.findViewById(R.id.tvActivityDifficulty);
+            tvActivityDifficulty  = itemView.findViewById(R.id.tvActivityDifficulty);
         }
     }
 }

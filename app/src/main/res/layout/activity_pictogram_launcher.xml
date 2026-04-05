@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="#FFFFFF">
+
+    <Button
+        android:id="@+id/back_button"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:text="@string/back_text"
+        android:contentDescription="@string/back_content_desc"
+        android:minHeight="48dp"
+        android:minWidth="96dp"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:id="@+id/tvRobotName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp" />
+
+    <Button
+        android:id="@+id/btnLaunchActivity"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:text="Lanzar actividad"
+        android:textSize="18sp"
+        android:layout_marginBottom="32dp" />
+
+    <TextView
+        android:id="@+id/tvSelectionLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Selección del alumno:"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tvSelectedPictogram"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/btnSendFeedback"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:text="Enviar respuesta: ¡Muy bien!"
+        android:textSize="18sp"
+        android:visibility="gone" />
+
+</LinearLayout>

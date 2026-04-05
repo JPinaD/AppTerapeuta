@@ -4,30 +4,27 @@ import android.os.Bundle;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appterapeuta.R;
-import com.example.appterapeuta.data.model.TherapyActivity;
-import com.example.appterapeuta.util.MockDataProvider;
-
-import java.util.List;
+import com.example.appterapeuta.viewmodel.ActivityCatalogViewModel;
 
 public class ActivityCatalogActivity extends AppCompatActivity {
-
-    private RecyclerView rvActivities;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_catalog);
 
-        rvActivities = findViewById(R.id.rvActivities);
-
-        List<TherapyActivity> activities = MockDataProvider.getMockActivities();
-
+        RecyclerView rvActivities = findViewById(R.id.rvActivities);
         rvActivities.setLayoutManager(new LinearLayoutManager(this));
-        rvActivities.setAdapter(new ActivityCatalogAdapter(activities));
+        ActivityCatalogAdapter adapter = new ActivityCatalogAdapter();
+        rvActivities.setAdapter(adapter);
+
+        ActivityCatalogViewModel viewModel = new ViewModelProvider(this).get(ActivityCatalogViewModel.class);
+        viewModel.activities.observe(this, adapter::setActivities);
 
         Button backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(v -> finish());
