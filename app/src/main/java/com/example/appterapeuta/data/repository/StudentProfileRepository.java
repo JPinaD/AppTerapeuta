@@ -26,6 +26,10 @@ public class StudentProfileRepository {
         Executors.newSingleThreadExecutor().execute(() -> db.studentProfileDao().insert(profile));
     }
 
+    public void update(StudentProfileEntity profile) {
+        Executors.newSingleThreadExecutor().execute(() -> db.studentProfileDao().update(profile));
+    }
+
     public void deleteById(String id) {
         Executors.newSingleThreadExecutor().execute(() -> db.studentProfileDao().deleteById(id));
     }

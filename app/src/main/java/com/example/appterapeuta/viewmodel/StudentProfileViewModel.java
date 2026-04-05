@@ -26,6 +26,10 @@ public class StudentProfileViewModel extends AndroidViewModel {
         repository.insert(profile);
     }
 
+    public void update(StudentProfileEntity profile) {
+        repository.update(profile);
+    }
+
     public void deleteById(String id) {
         repository.deleteById(id);
     }

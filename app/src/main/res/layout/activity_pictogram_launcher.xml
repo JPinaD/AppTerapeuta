@@ -24,6 +24,20 @@
         android:textStyle="bold"
         android:layout_marginBottom="24dp" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Alumno participante:"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <Spinner
+        android:id="@+id/spinnerStudent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp" />
+
     <Button
         android:id="@+id/btnLaunchActivity"
         android:layout_width="match_parent"

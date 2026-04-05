@@ -11,13 +11,16 @@ public class StudentProfileEntity {
     @NonNull
     public String id;
     public String name;
-    public String avatar;
-    public String educationalNeeds;
+    // JSON array de strings hexadecimales, ej: ["#C8E6C9","#4CAF50"]
+    public String excludedColors;
+    // Nombre del recurso raw en AppRobot, ej: "sound_birds". Null si no aplica.
+    public String backgroundSoundResName;
 
-    public StudentProfileEntity(@NonNull String id, String name, String avatar, String educationalNeeds) {
+    public StudentProfileEntity(@NonNull String id, String name,
+                                String excludedColors, String backgroundSoundResName) {
         this.id = id;
         this.name = name;
-        this.avatar = avatar;
-        this.educationalNeeds = educationalNeeds;
+        this.excludedColors = excludedColors;
+        this.backgroundSoundResName = backgroundSoundResName;
     }
 }

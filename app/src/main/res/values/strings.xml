@@ -8,8 +8,6 @@
     <string name="sessions">Sesiones</string>
     <string name="activity_catalog">Catálogo de actividades</string>
     <string name="student_name">Alumno</string>
-    <string name="student_avatar">Avatar</string>
-    <string name="student_needs">Necesidades</string>
     <string name="back_text">Volver</string>
     <string name="robot_list_empty">No se han encontrado robots</string>
     <string name="robot_status_detected">Detectado</string>

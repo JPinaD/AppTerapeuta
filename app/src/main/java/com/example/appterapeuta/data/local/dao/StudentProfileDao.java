@@ -5,6 +5,7 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import com.example.appterapeuta.data.local.entity.StudentProfileEntity;
 
@@ -18,6 +19,9 @@ public interface StudentProfileDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(StudentProfileEntity profile);
+
+    @Update
+    void update(StudentProfileEntity profile);
 
     @Query("DELETE FROM student_profiles WHERE id = :id")
     void deleteById(String id);
