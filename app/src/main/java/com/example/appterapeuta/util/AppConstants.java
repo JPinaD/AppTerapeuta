@@ -10,4 +10,10 @@ public class AppConstants {
     public static final String MSG_ACTIVITY_START     = "ACTIVITY_START";
     public static final String MSG_PICTOGRAM_SELECTED = "PICTOGRAM_SELECTED";
     public static final String MSG_ROBOT_FEEDBACK     = "ROBOT_FEEDBACK";
+
+    // Sesiones
+    public static final String MSG_SESSION_START  = "SESSION_START";
+    public static final String MSG_SESSION_END    = "SESSION_END";
+    public static final String MSG_SESSION_READY  = "SESSION_READY";
+    public static final String MSG_SESSION_ENDED  = "SESSION_ENDED";
 }
