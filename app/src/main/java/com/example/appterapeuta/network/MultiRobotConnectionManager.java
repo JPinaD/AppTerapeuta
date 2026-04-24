@@ -37,18 +37,20 @@ public class MultiRobotConnectionManager {
     public void connect(DiscoveredRobot robot) {
         String robotId = robot.robotId;
 
+        // Cancelar cliente anterior si existe
+        TcpClient existing = clients.remove(robotId);
+        if (existing != null) existing.disconnect();
+
         RobotConnection conn = connections.get(robotId);
         if (conn == null) {
             conn = new RobotConnection(robotId, robot.host, robot.port);
             connections.put(robotId, conn);
         }
 
-        TcpClient existing = clients.get(robotId);
-        if (existing != null) existing.disconnect();
-
         updateState(robotId, ConnectionState.CONNECTING);
 
         final RobotConnection finalConn = conn;
+        final TcpClient[] clientRef = new TcpClient[1];
         TcpClient client = new TcpClient(robot.host, robot.port, new TcpClient.ConnectionListener() {
             @Override public void onConnected() {
                 updateState(finalConn.robotId, ConnectionState.CONNECTED);
@@ -58,11 +60,28 @@ public class MultiRobotConnectionManager {
             }
             @Override public void onDisconnected() {
                 updateState(finalConn.robotId, ConnectionState.DISCONNECTED);
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                    if (clients.get(robot.robotId) == clientRef[0] &&
+                            connections.containsKey(robot.robotId) &&
+                            connections.get(robot.robotId).state != ConnectionState.CONNECTED) {
+                        clients.remove(robot.robotId);
+                        connect(robot);
+                    }
+                }, 2000);
             }
             @Override public void onError(Exception e) {
                 updateState(finalConn.robotId, ConnectionState.ERROR);
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                    if (clients.get(robot.robotId) == clientRef[0] &&
+                            connections.containsKey(robot.robotId) &&
+                            connections.get(robot.robotId).state != ConnectionState.CONNECTED) {
+                        clients.remove(robot.robotId);
+                        connect(robot);
+                    }
+                }, 2000);
             }
         });
+        clientRef[0] = client;
 
         clients.put(robotId, client);
         client.connect();
@@ -85,6 +104,7 @@ public class MultiRobotConnectionManager {
     public void disconnect(String robotId) {
         TcpClient client = clients.remove(robotId);
         if (client != null) client.disconnect();
+        connections.remove(robotId); // eliminar para que la reconexión no se dispare
         updateState(robotId, ConnectionState.DISCONNECTED);
     }
 

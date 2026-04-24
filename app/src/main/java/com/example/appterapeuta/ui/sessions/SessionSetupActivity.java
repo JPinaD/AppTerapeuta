@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.appterapeuta.AppTerapeutaApp;
 import com.example.appterapeuta.R;
 import com.example.appterapeuta.data.local.entity.StudentProfileEntity;
 import com.example.appterapeuta.data.model.ConnectionState;
@@ -44,8 +45,8 @@ public class SessionSetupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_session_setup);
 
-        robotViewModel   = new ViewModelProvider(this).get(RobotViewModel.class);
-        sessionViewModel = new ViewModelProvider(this).get(SessionViewModel.class);
+        robotViewModel   = ((AppTerapeutaApp) getApplication()).getRobotViewModel();
+        sessionViewModel = ((AppTerapeutaApp) getApplication()).getSessionViewModel();
         profileViewModel = new ViewModelProvider(this).get(StudentProfileViewModel.class);
 
         RecyclerView rvRobots = findViewById(R.id.rvRobots);

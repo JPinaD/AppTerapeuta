@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.appterapeuta.AppTerapeutaApp;
 import com.example.appterapeuta.R;
 import com.example.appterapeuta.data.model.RobotSessionStatus;
 import com.example.appterapeuta.viewmodel.RobotViewModel;
@@ -24,8 +25,8 @@ public class SessionLiveActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_session_live);
 
-        RobotViewModel robotViewModel     = new ViewModelProvider(this).get(RobotViewModel.class);
-        SessionViewModel sessionViewModel = new ViewModelProvider(this).get(SessionViewModel.class);
+        RobotViewModel robotViewModel     = ((AppTerapeutaApp) getApplication()).getRobotViewModel();
+        SessionViewModel sessionViewModel = ((AppTerapeutaApp) getApplication()).getSessionViewModel();
 
         RecyclerView rv = findViewById(R.id.rvRobotStatuses);
         rv.setLayoutManager(new LinearLayoutManager(this));
@@ -44,8 +45,10 @@ public class SessionLiveActivity extends AppCompatActivity {
 
         Button btnEnd = findViewById(R.id.btnEndSession);
         btnEnd.setOnClickListener(v -> {
+            btnEnd.setEnabled(false);
             sessionViewModel.endSession(robotViewModel);
-            finish();
+            // Dar tiempo al mensaje SESSION_END para enviarse antes de cerrar
+            btnEnd.postDelayed(this::finish, 500);
         });
     }
 }

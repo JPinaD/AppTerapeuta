@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.appterapeuta.AppTerapeutaApp;
 import com.example.appterapeuta.R;
 import com.example.appterapeuta.data.model.DiscoveredRobot;
 import com.example.appterapeuta.data.model.RobotConnection;
@@ -53,7 +54,7 @@ public class RobotListActivity extends AppCompatActivity {
         adapter = new RobotAdapter(robotList, this::onRobotSelected, () -> currentConnections);
         recyclerView.setAdapter(adapter);
 
-        viewModel = new ViewModelProvider(this).get(RobotViewModel.class);
+        viewModel = ((AppTerapeutaApp) getApplication()).getRobotViewModel();
         viewModel.getDiscoveredRobots().observe(this, this::updateList);
         viewModel.getRobotConnections().observe(this, connections -> {
             currentConnections = connections;

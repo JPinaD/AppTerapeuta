@@ -72,6 +72,7 @@ public class RobotViewModel extends AndroidViewModel {
                 }
                 current.add(robot);
                 discoveredRobots.postValue(current);
+                connectionManager.connect(robot); // conectar automáticamente al descubrir
             }
 
             @Override

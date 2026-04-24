@@ -28,7 +28,8 @@ public class TcpClient {
     private final String host;
     private final int port;
     private final ConnectionListener listener;
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ExecutorService readExecutor  = Executors.newSingleThreadExecutor();
+    private final ExecutorService writeExecutor = Executors.newSingleThreadExecutor();
 
     private Socket socket;
     private PrintWriter out;
@@ -41,9 +42,10 @@ public class TcpClient {
     }
 
     public void connect() {
-        executor.execute(() -> {
+        readExecutor.execute(() -> {
             try {
                 socket = new Socket(host, port);
+                socket.setKeepAlive(true);
                 out = new PrintWriter(socket.getOutputStream(), true);
                 connected = true;
                 listener.onConnected();
@@ -68,14 +70,15 @@ public class TcpClient {
 
     public void send(String message) {
         if (out != null && connected) {
-            executor.execute(() -> out.println(message));
+            writeExecutor.execute(() -> out.println(message));
         }
     }
 
     public void disconnect() {
         connected = false;
         close();
-        executor.shutdownNow();
+        readExecutor.shutdownNow();
+        writeExecutor.shutdownNow();
     }
 
     private void close() {
