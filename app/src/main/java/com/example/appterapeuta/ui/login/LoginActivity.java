@@ -1,57 +1,61 @@
 package com.example.appterapeuta.ui.login;
 
-import android.os.Bundle;
-
-import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import android.content.Intent;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.appterapeuta.R;
 import com.example.appterapeuta.ui.dashboard.MainDashboardActivity;
-import com.example.appterapeuta.ui.splash.SplashActivity;
+import com.example.appterapeuta.ui.therapists.TherapistManagementActivity;
+import com.example.appterapeuta.viewmodel.LoginViewModel;
+import com.google.android.material.textfield.TextInputEditText;
 
 public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
-// LoginActivity.java
-        Button loginButton = findViewById(R.id.login_button);
-        EditText usernameEdit = findViewById(R.id.username);
-        EditText passwordEdit = findViewById(R.id.password);
+        TextInputEditText etUsername = findViewById(R.id.username);
+        TextInputEditText etPassword = findViewById(R.id.password);
+        TextView tvError = findViewById(R.id.tvLoginError);
 
-        loginButton.setOnClickListener(v -> {
-            String username = usernameEdit.getText().toString();
-            String password = passwordEdit.getText().toString();
-            if (!username.isEmpty() && !password.isEmpty()) {
-                Intent intent = new Intent(LoginActivity.this, MainDashboardActivity.class);
-                startActivity(intent);
+        LoginViewModel vm = new ViewModelProvider(this).get(LoginViewModel.class);
+
+        vm.getLoginResult().observe(this, result -> {
+            if (result == LoginViewModel.LoginResult.SUCCESS) {
+                startActivity(new Intent(this, MainDashboardActivity.class));
+                finish();
+            } else if (result == LoginViewModel.LoginResult.SUCCESS_ROOT) {
+                Intent i = new Intent(this, TherapistManagementActivity.class);
+                startActivity(i);
+                finish();
             } else {
-                Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
+                tvError.setVisibility(View.VISIBLE);
             }
         });
-        Button backButton = findViewById(R.id.back_button);
-        backButton.setOnClickListener(v -> {
 
-            Intent intent = new Intent(LoginActivity.this, SplashActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(intent);
-            finish();
+        findViewById(R.id.login_button).setOnClickListener(v -> {
+            tvError.setVisibility(View.GONE);
+            String user = etUsername.getText() != null ? etUsername.getText().toString().trim() : "";
+            String pass = etPassword.getText() != null ? etPassword.getText().toString() : "";
+            if (user.isEmpty() || pass.isEmpty()) {
+                tvError.setText("Completa todos los campos");
+                tvError.setVisibility(View.VISIBLE);
+                return;
+            }
+            vm.login(user, pass);
         });
+    }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finishAffinity();
     }
 }

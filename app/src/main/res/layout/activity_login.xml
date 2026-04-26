@@ -39,7 +39,7 @@
         android:layout_height="wrap_content"
         android:hint="Contraseña"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_marginBottom="24dp">
+        android:layout_marginBottom="8dp">
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/password"
             android:layout_width="match_parent"
@@ -49,19 +49,23 @@
             android:fontFamily="monospace" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <TextView
+        android:id="@+id/tvLoginError"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Usuario o contraseña incorrectos"
+        android:textColor="@color/hud_danger"
+        android:fontFamily="monospace"
+        android:textSize="13sp"
+        android:gravity="center"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone" />
+
     <Button
         android:id="@+id/login_button"
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:text="ACCEDER"
         style="@style/HUD.Button" />
-
-    <Button
-        android:id="@+id/back_button"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:text="◀ VOLVER"
-        style="@style/HUD.Button"
-        android:layout_marginTop="12dp" />
 
 </LinearLayout>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/hud_bg"
@@ -16,14 +15,12 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="12dp">
-
             <Button
                 android:id="@+id/back_button"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:text="◀"
                 style="@style/HUD.Button" />
-
             <TextView
                 android:id="@+id/tvFormTitle"
                 android:layout_width="0dp"
@@ -37,64 +34,156 @@
                 android:layout_gravity="center_vertical" />
         </LinearLayout>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/hud_accent_cyan"
-            android:layout_marginBottom="20dp" />
+        <View android:layout_width="match_parent" android:layout_height="1dp"
+            android:background="@color/hud_accent_cyan" android:layout_marginBottom="20dp" />
 
+        <!-- Nombre -->
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
             android:hint="Nombre del alumno"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_marginBottom="20dp">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:inputType="textPersonName"
-                android:textColor="@color/hud_text_primary"
-                android:fontFamily="monospace" />
+                android:textColor="@color/hud_text_primary" android:fontFamily="monospace" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <TextView
-            android:id="@+id/tvColorsLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="COLORES EXCLUIDOS"
-            android:textSize="13sp"
-            android:fontFamily="monospace"
-            android:textColor="@color/hud_text_secondary"
-            android:layout_marginBottom="8dp" />
-
+        <!-- Colores excluidos -->
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="COLORES EXCLUIDOS" android:textSize="13sp" android:fontFamily="monospace"
+            android:textColor="@color/hud_text_secondary" android:layout_marginBottom="8dp" />
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chipGroupColors"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginBottom="20dp" />
 
-        <TextView
-            android:id="@+id/tvSoundLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="SONIDO DE FONDO"
-            android:textSize="13sp"
-            android:fontFamily="monospace"
-            android:textColor="@color/hud_text_secondary"
-            android:layout_marginBottom="4dp" />
-
-        <Spinner
-            android:id="@+id/spinnerSound"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+        <!-- Sonido de fondo -->
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="SONIDO DE FONDO" android:textSize="13sp" android:fontFamily="monospace"
+            android:textColor="@color/hud_text_secondary" android:layout_marginBottom="4dp" />
+        <Spinner android:id="@+id/spinnerSound"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginBottom="24dp" />
+
+        <!-- Separador clínico -->
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="[ CARACTERÍSTICAS CLÍNICAS ]" android:textSize="14sp"
+            android:fontFamily="monospace" android:textStyle="bold"
+            android:textColor="@color/hud_accent_cyan" android:layout_marginBottom="16dp" />
+
+        <!-- Nivel comunicativo -->
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Nivel comunicativo" android:textSize="13sp" android:fontFamily="monospace"
+            android:textColor="@color/hud_text_secondary" android:layout_marginBottom="4dp" />
+        <Spinner android:id="@+id/spinnerCommunication"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp" />
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etCommunicationOther"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:hint="Especificar..." android:textColor="@color/hud_text_primary"
+            android:fontFamily="monospace" android:visibility="gone"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Sensibilidad sensorial -->
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Sensibilidad sensorial" android:textSize="13sp" android:fontFamily="monospace"
+            android:textColor="@color/hud_text_secondary" android:layout_marginBottom="4dp" />
+        <Spinner android:id="@+id/spinnerSensory"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp" />
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etSensoryOther"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:hint="Especificar..." android:textColor="@color/hud_text_primary"
+            android:fontFamily="monospace" android:visibility="gone"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Nivel atencional -->
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Nivel atencional" android:textSize="13sp" android:fontFamily="monospace"
+            android:textColor="@color/hud_text_secondary" android:layout_marginBottom="4dp" />
+        <Spinner android:id="@+id/spinnerAttention"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp" />
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etAttentionOther"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:hint="Especificar..." android:textColor="@color/hud_text_primary"
+            android:fontFamily="monospace" android:visibility="gone"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Motricidad -->
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Motricidad" android:textSize="13sp" android:fontFamily="monospace"
+            android:textColor="@color/hud_text_secondary" android:layout_marginBottom="4dp" />
+        <Spinner android:id="@+id/spinnerMotor"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp" />
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etMotorOther"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:hint="Especificar..." android:textColor="@color/hud_text_primary"
+            android:fontFamily="monospace" android:visibility="gone"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Perfil socioemocional -->
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Perfil socioemocional" android:textSize="13sp" android:fontFamily="monospace"
+            android:textColor="@color/hud_text_secondary" android:layout_marginBottom="4dp" />
+        <Spinner android:id="@+id/spinnerSocioemotional"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp" />
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etSocioemotionalOther"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:hint="Especificar..." android:textColor="@color/hud_text_primary"
+            android:fontFamily="monospace" android:visibility="gone"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Observaciones clínicas -->
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Observaciones clínicas" android:textSize="13sp" android:fontFamily="monospace"
+            android:textColor="@color/hud_text_secondary" android:layout_marginBottom="4dp" />
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etClinicalNotes"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:hint="Observaciones..." android:textColor="@color/hud_text_primary"
+            android:fontFamily="monospace" android:inputType="textMultiLine"
+            android:minLines="3" android:gravity="top"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Lugar Seguro (reservado) -->
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="[ LUGAR SEGURO ]" android:textSize="14sp"
+            android:fontFamily="monospace" android:textStyle="bold"
+            android:textColor="@color/hud_accent_cyan" android:layout_marginBottom="4dp" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Recurso multimedia que se activará durante una parada de emergencia"
+            android:textSize="12sp" android:fontFamily="monospace"
+            android:textColor="@color/hud_text_secondary" android:layout_marginBottom="8dp" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:layout_marginBottom="24dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSafePlaceUri"
+                android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Sin recurso asignado" android:textColor="@color/hud_text_primary"
+                android:fontFamily="monospace" android:focusable="false"
+                android:layout_marginEnd="8dp" />
+            <Button
+                android:id="@+id/btnSelectSafePlace"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Seleccionar"
+                style="@style/HUD.Button"
+                android:enabled="false" />
+        </LinearLayout>
 
         <Button
             android:id="@+id/btnSave"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
+            android:layout_width="match_parent" android:layout_height="52dp"
             android:text="GUARDAR"
             style="@style/HUD.Button" />
 

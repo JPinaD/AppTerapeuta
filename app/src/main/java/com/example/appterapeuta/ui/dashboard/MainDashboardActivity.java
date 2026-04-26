@@ -74,6 +74,15 @@ public class MainDashboardActivity extends AppCompatActivity {
                 startActivity(new Intent(this, ActivityCatalogActivity.class)));
 
         // Añadir robot
+
+        // Botón gestión terapeutas (solo visible para root)
+        android.widget.Button btnManageTherapists = findViewById(R.id.btnManageTherapists);
+        if (getIntent().getBooleanExtra("is_root", false)) {
+            btnManageTherapists.setVisibility(android.view.View.VISIBLE);
+        }
+        btnManageTherapists.setOnClickListener(v ->
+                startActivity(new Intent(this, com.example.appterapeuta.ui.therapists.TherapistManagementActivity.class)));
+
         findViewById(R.id.btnAddRobot).setOnClickListener(v -> showAddRobotDialog());
     }
 

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/hud_bg"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp">
+        <Button
+            android:id="@+id/back_button"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="◀"
+            style="@style/HUD.Button" />
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="GESTIÓN DE TERAPEUTAS"
+            android:textColor="@color/hud_accent_cyan"
+            android:fontFamily="monospace"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:layout_gravity="center_vertical" />
+    </LinearLayout>
+
+    <View android:layout_width="match_parent" android:layout_height="1dp"
+        android:background="@color/hud_accent_cyan" android:layout_marginBottom="12dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvTherapists"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/btnAddTherapist"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="+ AÑADIR TERAPEUTA"
+        style="@style/HUD.Button"
+        android:layout_marginTop="12dp" />
+
+</LinearLayout>
