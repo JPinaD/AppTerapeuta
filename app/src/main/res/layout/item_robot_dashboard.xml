@@ -2,12 +2,11 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardRobot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="6dp"
-    app:cardBackgroundColor="@color/hud_card_bg"
+    android:layout_marginBottom="8dp"
     app:cardCornerRadius="4dp"
-    app:strokeColor="@color/hud_accent_cyan"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -32,22 +31,23 @@
                 android:textColor="@color/hud_text_primary" />
 
             <TextView
-                android:id="@+id/tvSessionState"
+                android:id="@+id/tvRobotOnline"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="13sp"
+                android:textSize="12sp"
                 android:fontFamily="monospace"
-                android:textColor="@color/hud_accent_cyan" />
+                android:textStyle="bold" />
         </LinearLayout>
 
         <TextView
-            android:id="@+id/tvTelemetry"
+            android:id="@+id/tvRobotDetails"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="12sp"
             android:fontFamily="monospace"
             android:textColor="@color/hud_text_secondary"
-            android:layout_marginTop="4dp" />
+            android:layout_marginTop="4dp"
+            android:visibility="gone" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

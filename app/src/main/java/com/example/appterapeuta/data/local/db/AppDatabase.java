@@ -9,16 +9,18 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
+import com.example.appterapeuta.data.local.dao.RobotConfigDao;
 import com.example.appterapeuta.data.local.dao.StudentProfileDao;
 import com.example.appterapeuta.data.local.dao.TherapyActivityDao;
+import com.example.appterapeuta.data.local.entity.RobotConfigEntity;
 import com.example.appterapeuta.data.local.entity.StudentProfileEntity;
 import com.example.appterapeuta.data.local.entity.TherapyActivityEntity;
 
 import java.util.concurrent.Executors;
 
 @Database(
-    entities = {StudentProfileEntity.class, TherapyActivityEntity.class},
-    version = 2,
+    entities = {StudentProfileEntity.class, TherapyActivityEntity.class, RobotConfigEntity.class},
+    version = 3,
     exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
@@ -27,6 +29,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
     public abstract StudentProfileDao studentProfileDao();
     public abstract TherapyActivityDao therapyActivityDao();
+    public abstract RobotConfigDao robotConfigDao();
 
     // v1 → v2: sustituye avatar/educationalNeeds por excludedColors/backgroundSoundResName
     // SQLite no soporta DROP COLUMN en API < 32, se recrea la tabla.
@@ -45,6 +48,18 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    // v2 → v3: añade tabla robot_configs
+    static final Migration MIGRATION_2_3 = new Migration(2, 3) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS robot_configs (" +
+                    "robotId TEXT NOT NULL PRIMARY KEY, " +
+                    "name TEXT, " +
+                    "lastKnownHost TEXT, " +
+                    "lastKnownPort INTEGER NOT NULL DEFAULT 9000)");
+        }
+    };
+
     public static AppDatabase getInstance(Context context) {
         if (instance == null) {
             synchronized (AppDatabase.class) {
@@ -54,7 +69,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             "appterapeuta.db"
                     )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .addCallback(new Callback() {
                         @Override
                         public void onCreate(@NonNull SupportSQLiteDatabase db) {

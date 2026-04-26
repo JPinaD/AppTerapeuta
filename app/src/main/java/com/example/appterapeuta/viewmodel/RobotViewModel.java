@@ -31,6 +31,9 @@ public class RobotViewModel extends AndroidViewModel {
     private final MutableLiveData<Map<String, RobotConnection>> robotConnections = new MutableLiveData<>(new HashMap<>());
     private final MutableLiveData<ActivityEvent> activityEvents = new MutableLiveData<>();
 
+    // Listener adicional para telemetría (no pasa por LiveData para evitar pérdida de eventos)
+    private volatile java.util.function.BiConsumer<String, String> telemetryListener;
+
     private final NsdDiscoveryManager nsdDiscoveryManager;
     private final MultiRobotConnectionManager connectionManager;
 
@@ -47,11 +50,18 @@ public class RobotViewModel extends AndroidViewModel {
                 JSONObject obj = new JSONObject(message);
                 String type = obj.getString("type");
                 String payload = obj.optString("payload", null);
-                activityEvents.postValue(new ActivityEvent(robotId, type, payload));
+                ActivityEvent event = new ActivityEvent(robotId, type, payload);
+                activityEvents.postValue(event);
+                // Notificar telemetría directamente sin pasar por LiveData
+                if (telemetryListener != null) telemetryListener.accept(robotId, message);
             } catch (JSONException e) {
                 Log.w(TAG, "Mensaje entrante no parseable: " + message);
             }
         });
+    }
+
+    public void setTelemetryListener(java.util.function.BiConsumer<String, String> listener) {
+        this.telemetryListener = listener;
     }
 
     public LiveData<List<DiscoveredRobot>> getDiscoveredRobots() { return discoveredRobots; }

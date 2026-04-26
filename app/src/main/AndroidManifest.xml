@@ -25,9 +25,6 @@
             android:name=".ui.history.SessionHistoryActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.controlcenter.ControlCenterActivity"
-            android:exported="false" />
-        <activity
             android:name=".ui.activities.ActivityConfigActivity"
             android:exported="false" />
         <activity

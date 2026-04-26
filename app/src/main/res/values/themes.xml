@@ -1,9 +1,30 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Base.Theme.AppTerapeuta" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:windowBackground">@color/hud_bg</item>
+        <item name="colorPrimary">@color/hud_accent_cyan</item>
+        <item name="colorOnPrimary">@color/hud_bg</item>
+        <item name="colorSurface">@color/hud_card_bg</item>
+        <item name="colorOnSurface">@color/hud_text_primary</item>
+        <item name="android:textColor">@color/hud_text_primary</item>
+        <item name="android:editTextColor">@color/hud_text_primary</item>
     </style>
 
     <style name="Theme.AppTerapeuta" parent="Base.Theme.AppTerapeuta" />
+
+    <style name="HUD.Spinner" parent="Widget.AppCompat.Spinner">
+        <item name="android:background">@color/hud_card_bg</item>
+        <item name="android:textColor">@color/hud_text_primary</item>
+        <item name="android:popupBackground">@color/hud_card_bg</item>
+    </style>
+
+    <style name="HUD.Spinner.DropDownItem" parent="Widget.AppCompat.DropDownItem.Spinner">
+        <item name="android:textColor">@color/hud_text_primary</item>
+        <item name="android:background">@color/hud_card_bg</item>
+    </style>
+
+    <style name="HUD.Spinner.DropDownList" parent="android:Widget.ListView.DropDown">
+        <item name="android:background">@color/hud_card_bg</item>
+        <item name="android:divider">@color/hud_accent_cyan</item>
+        <item name="android:dividerHeight">1dp</item>
+    </style>
 </resources>

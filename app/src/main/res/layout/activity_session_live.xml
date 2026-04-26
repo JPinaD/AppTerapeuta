@@ -1,35 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/hud_bg"
     android:padding="16dp">
 
-    <LinearLayout
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="16dp">
+        android:text="SESIÓN ACTIVA"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:fontFamily="monospace"
+        android:textColor="@color/hud_accent_cyan"
+        android:gravity="center"
+        android:paddingBottom="8dp" />
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Sesión activa"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_gravity="center_vertical" />
-
-        <Button
-            android:id="@+id/btnEndSession"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:text="Finalizar sesión"
-            android:backgroundTint="#F44336"
-            android:textColor="#FFFFFF" />
-
-    </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/hud_accent_cyan"
+        android:layout_marginBottom="12dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvRobotStatuses"
@@ -37,4 +29,36 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
+    <Button
+        android:id="@+id/btnBackToPanel"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="◀ VOLVER AL PANEL"
+        style="@style/HUD.Button"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="4dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnBackToSetup"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="◀ CONFIGURAR"
+            style="@style/HUD.Button"
+            android:layout_marginEnd="4dp" />
+
+        <Button
+            android:id="@+id/btnEndSession"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="■ FINALIZAR"
+            style="@style/HUD.Button.Danger" />
+
+    </LinearLayout>
 </LinearLayout>

@@ -1,43 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/hud_bg"
     android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="12dp">
 
         <Button
             android:id="@+id/back_button"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:text="@string/back_text"
-            android:minHeight="48dp"
-            android:minWidth="96dp" />
+            android:text="◀"
+            style="@style/HUD.Button" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Nueva sesión"
-            android:textSize="20sp"
+            android:text="NUEVA SESIÓN"
+            android:textSize="18sp"
             android:textStyle="bold"
+            android:fontFamily="monospace"
+            android:textColor="@color/hud_accent_cyan"
             android:gravity="center"
             android:layout_gravity="center_vertical" />
-
     </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/hud_accent_cyan"
+        android:layout_marginBottom="12dp" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Robots conectados"
-        android:textSize="16sp"
-        android:textStyle="bold"
+        android:text="ROBOTS CONECTADOS"
+        android:textSize="13sp"
+        android:fontFamily="monospace"
+        android:textColor="@color/hud_text_secondary"
         android:layout_marginBottom="8dp" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -45,27 +52,29 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="12dp" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Actividad"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
+        android:text="ACTIVIDAD"
+        android:textSize="13sp"
+        android:fontFamily="monospace"
+        android:textColor="@color/hud_text_secondary"
+        android:layout_marginBottom="4dp" />
 
     <Spinner
         android:id="@+id/spinnerActivity"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp" />
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/hud_accent_cyan" />
 
     <Button
         android:id="@+id/btnStartSession"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:text="Iniciar sesión"
-        android:textSize="18sp" />
+        android:layout_height="52dp"
+        android:text="▶  INICIAR SESIÓN"
+        style="@style/HUD.Button" />
 
 </LinearLayout>

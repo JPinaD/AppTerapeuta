@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="HUD.Text.Primary" parent="">
+        <item name="android:textColor">@color/hud_text_primary</item>
+        <item name="android:fontFamily">monospace</item>
+    </style>
+    <style name="HUD.Text.Secondary" parent="">
+        <item name="android:textColor">@color/hud_text_secondary</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+    <style name="HUD.Text.Accent" parent="">
+        <item name="android:textColor">@color/hud_accent_cyan</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="HUD.Button" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/hud_accent_cyan</item>
+        <item name="android:textColor">@color/hud_bg</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="HUD.Button.Danger" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/hud_danger</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:fontFamily">monospace</item>
+    </style>
+</resources>

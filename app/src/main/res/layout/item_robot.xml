@@ -1,32 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:layout_marginBottom="12dp"
-    android:background="#EAEAEA">
+    android:layout_margin="6dp"
+    app:cardBackgroundColor="@color/hud_card_bg"
+    app:cardCornerRadius="4dp"
+    app:strokeColor="@color/hud_accent_cyan"
+    app:strokeWidth="1dp">
 
-    <TextView
-        android:id="@+id/robot_name"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Robot"
-        android:textSize="20sp"
-        android:textStyle="bold" />
+        android:orientation="vertical"
+        android:padding="12dp">
 
-    <TextView
-        android:id="@+id/robot_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Estado"
-        android:layout_marginTop="4dp" />
+        <TextView
+            android:id="@+id/robot_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:fontFamily="monospace"
+            android:textColor="@color/hud_text_primary" />
 
-    <TextView
-        android:id="@+id/robot_battery"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Batería"
-        android:layout_marginTop="4dp" />
+        <TextView
+            android:id="@+id/robot_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            android:textColor="@color/hud_accent_cyan"
+            android:layout_marginTop="4dp" />
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/robot_battery"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            android:textColor="@color/hud_text_secondary"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -35,6 +35,7 @@ public class SessionViewModel extends AndroidViewModel {
             new MutableLiveData<>(new HashMap<>());
 
     private final StudentProfileRepository profileRepository;
+    private List<StudentProfileEntity> cachedProfiles = new ArrayList<>();
 
     public SessionViewModel(@NonNull Application application) {
         super(application);
@@ -61,12 +62,16 @@ public class SessionViewModel extends AndroidViewModel {
                              List<StudentProfileEntity> allProfiles) {
         Session session = currentSession.getValue();
         if (session == null) return;
+
+        // Llenar caché ANTES de setValue para que el observer ya tenga los perfiles
+        cachedProfiles = allProfiles != null ? allProfiles : new ArrayList<>();
+
         session.state = SessionState.ACTIVE;
         currentSession.setValue(session);
 
         for (String robotId : session.participatingRobotIds) {
             String profileId = session.robotToStudentProfileId.get(robotId);
-            StudentProfileEntity profile = findProfile(allProfiles, profileId);
+            StudentProfileEntity profile = findProfile(cachedProfiles, profileId);
             String msg = buildSessionStartMessage(session, profile);
             robotViewModel.sendMessage(robotId, msg);
         }
@@ -143,6 +148,12 @@ public class SessionViewModel extends AndroidViewModel {
             android.util.Log.e("SessionViewModel", "Error construyendo SESSION_START", e);
             return "";
         }
+    }
+
+    /** Devuelve el nombre del alumno por profileId, o null si no se encuentra. */
+    public String getStudentName(String profileId) {
+        StudentProfileEntity p = findProfile(cachedProfiles, profileId);
+        return p != null ? p.name : null;
     }
 
     private StudentProfileEntity findProfile(List<StudentProfileEntity> profiles, String profileId) {
