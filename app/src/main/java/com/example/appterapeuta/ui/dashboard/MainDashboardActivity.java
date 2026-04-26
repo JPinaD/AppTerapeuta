@@ -68,6 +68,8 @@ public class MainDashboardActivity extends AppCompatActivity {
                 startActivity(new Intent(this, StudentProfileListActivity.class)));
         findViewById(R.id.card_session).setOnClickListener(v ->
                 startActivity(new Intent(this, SessionSetupActivity.class)));
+        findViewById(R.id.btnSessionHistory).setOnClickListener(v ->
+                startActivity(new Intent(this, com.example.appterapeuta.ui.history.SessionHistoryActivity.class)));
         findViewById(R.id.card_activity_catalog).setOnClickListener(v ->
                 startActivity(new Intent(this, ActivityCatalogActivity.class)));
 

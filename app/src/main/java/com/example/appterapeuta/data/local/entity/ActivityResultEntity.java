@@ -6,7 +6,7 @@ import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
 @Entity(
-    tableName = "incidents",
+    tableName = "activity_results",
     foreignKeys = @ForeignKey(
         entity = SessionRecordEntity.class,
         parentColumns = "sessionId",
@@ -15,21 +15,14 @@ import androidx.room.PrimaryKey;
     ),
     indices = @Index("sessionId")
 )
-public class IncidentEntity {
+public class ActivityResultEntity {
     @PrimaryKey(autoGenerate = true)
     public long id;
     public String sessionId;
-    public String robotId;
-    public String studentId;
-    public long timestamp;
-    public String reason;
+    public String activityId;
 
-    public IncidentEntity(String sessionId, String robotId, String studentId,
-                          long timestamp, String reason) {
+    public ActivityResultEntity(String sessionId, String activityId) {
         this.sessionId = sessionId;
-        this.robotId = robotId;
-        this.studentId = studentId;
-        this.timestamp = timestamp;
-        this.reason = reason;
+        this.activityId = activityId;
     }
 }

@@ -113,9 +113,9 @@
                 android:padding="16dp" />
         </com.google.android.material.card.MaterialCardView>
 
+
         <!-- Sesiones -->
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/card_session"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
@@ -123,17 +123,42 @@
             app:cardCornerRadius="4dp"
             app:strokeColor="@color/hud_accent_cyan"
             app:strokeWidth="1dp">
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="[ SESIONES ]"
-                android:textColor="@color/hud_accent_cyan"
-                android:fontFamily="monospace"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:padding="16dp" />
+                android:orientation="vertical"
+                android:padding="16dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="[ SESIONES ]"
+                    android:textColor="@color/hud_accent_cyan"
+                    android:fontFamily="monospace"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:layout_marginBottom="8dp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <Button
+                        android:id="@+id/card_session"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="+ NUEVA SESIÓN"
+                        style="@style/HUD.Button"
+                        android:layout_marginEnd="4dp" />
+                    <Button
+                        android:id="@+id/btnSessionHistory"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:text="HISTORIAL"
+                        style="@style/HUD.Button" />
+                </LinearLayout>
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
-
         <!-- Catálogo -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_activity_catalog"

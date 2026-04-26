@@ -9,18 +9,34 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
+import com.example.appterapeuta.data.local.dao.ActivityResultDao;
+import com.example.appterapeuta.data.local.dao.AlumnResultDao;
+import com.example.appterapeuta.data.local.dao.IncidentDao;
 import com.example.appterapeuta.data.local.dao.RobotConfigDao;
+import com.example.appterapeuta.data.local.dao.SessionRecordDao;
 import com.example.appterapeuta.data.local.dao.StudentProfileDao;
 import com.example.appterapeuta.data.local.dao.TherapyActivityDao;
+import com.example.appterapeuta.data.local.entity.ActivityResultEntity;
+import com.example.appterapeuta.data.local.entity.AlumnResultEntity;
+import com.example.appterapeuta.data.local.entity.IncidentEntity;
 import com.example.appterapeuta.data.local.entity.RobotConfigEntity;
+import com.example.appterapeuta.data.local.entity.SessionRecordEntity;
 import com.example.appterapeuta.data.local.entity.StudentProfileEntity;
 import com.example.appterapeuta.data.local.entity.TherapyActivityEntity;
 
 import java.util.concurrent.Executors;
 
 @Database(
-    entities = {StudentProfileEntity.class, TherapyActivityEntity.class, RobotConfigEntity.class},
-    version = 3,
+    entities = {
+        StudentProfileEntity.class,
+        TherapyActivityEntity.class,
+        RobotConfigEntity.class,
+        SessionRecordEntity.class,
+        ActivityResultEntity.class,
+        AlumnResultEntity.class,
+        IncidentEntity.class
+    },
+    version = 4,
     exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
@@ -30,9 +46,11 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract StudentProfileDao studentProfileDao();
     public abstract TherapyActivityDao therapyActivityDao();
     public abstract RobotConfigDao robotConfigDao();
+    public abstract SessionRecordDao sessionRecordDao();
+    public abstract ActivityResultDao activityResultDao();
+    public abstract AlumnResultDao alumnResultDao();
+    public abstract IncidentDao incidentDao();
 
-    // v1 → v2: sustituye avatar/educationalNeeds por excludedColors/backgroundSoundResName
-    // SQLite no soporta DROP COLUMN en API < 32, se recrea la tabla.
     static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase db) {
@@ -48,7 +66,6 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
-    // v2 → v3: añade tabla robot_configs
     static final Migration MIGRATION_2_3 = new Migration(2, 3) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase db) {
@@ -57,6 +74,42 @@ public abstract class AppDatabase extends RoomDatabase {
                     "name TEXT, " +
                     "lastKnownHost TEXT, " +
                     "lastKnownPort INTEGER NOT NULL DEFAULT 9000)");
+        }
+    };
+
+    // v3 → v4: añade tablas de historial (session_records, activity_results, alumn_results, incidents)
+    static final Migration MIGRATION_3_4 = new Migration(3, 4) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS session_records (" +
+                    "sessionId TEXT NOT NULL PRIMARY KEY, " +
+                    "startTimestamp INTEGER NOT NULL, " +
+                    "endTimestamp INTEGER NOT NULL, " +
+                    "robotIdsJson TEXT, " +
+                    "robotToStudentJson TEXT)");
+            db.execSQL("CREATE TABLE IF NOT EXISTS activity_results (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "sessionId TEXT, " +
+                    "activityId TEXT, " +
+                    "FOREIGN KEY(sessionId) REFERENCES session_records(sessionId) ON DELETE CASCADE)");
+            db.execSQL("CREATE TABLE IF NOT EXISTS alumn_results (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "activityResultId INTEGER, " +
+                    "studentId TEXT, " +
+                    "studentName TEXT, " +
+                    "attempts INTEGER NOT NULL, " +
+                    "successes INTEGER NOT NULL, " +
+                    "avgResponseTimeMs INTEGER NOT NULL, " +
+                    "finalPictogramId TEXT, " +
+                    "FOREIGN KEY(activityResultId) REFERENCES activity_results(id) ON DELETE CASCADE)");
+            db.execSQL("CREATE TABLE IF NOT EXISTS incidents (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "sessionId TEXT, " +
+                    "robotId TEXT, " +
+                    "studentId TEXT, " +
+                    "timestamp INTEGER NOT NULL, " +
+                    "reason TEXT, " +
+                    "FOREIGN KEY(sessionId) REFERENCES session_records(sessionId) ON DELETE CASCADE)");
         }
     };
 
@@ -69,7 +122,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             "appterapeuta.db"
                     )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .addCallback(new Callback() {
                         @Override
                         public void onCreate(@NonNull SupportSQLiteDatabase db) {
