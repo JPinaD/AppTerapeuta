@@ -65,6 +65,7 @@ class SessionStatusAdapter extends RecyclerView.Adapter<SessionStatusAdapter.VH>
             case WAITING:     return "⏳ Esperando";
             case READY:       return "✅ Listo";
             case IN_ACTIVITY: return "▶ En actividad";
+            case PAUSED:      return "⏸ Pausado";
             case ENDED:       return "🏁 Finalizado";
             case ERROR:       return "❌ Error";
             default:          return state.name();

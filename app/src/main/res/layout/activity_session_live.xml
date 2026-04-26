@@ -29,13 +29,53 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
+    <!-- Parada de emergencia -->
+    <Button
+        android:id="@+id/btnEmergencyStop"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:text="⏸  PARADA DE EMERGENCIA"
+        android:backgroundTint="#7C3AED"
+        android:textColor="#FFFFFF"
+        android:fontFamily="monospace"
+        android:textStyle="bold"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="4dp" />
+
+    <!-- Controles de pausa: visibles solo cuando hay robots PAUSED -->
+    <LinearLayout
+        android:id="@+id/layoutPauseControls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        android:layout_marginBottom="4dp">
+
+        <Button
+            android:id="@+id/btnResume"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="▶ REANUDAR"
+            style="@style/HUD.Button"
+            android:layout_marginEnd="4dp" />
+
+        <Button
+            android:id="@+id/btnSuspend"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="⏹ SUSPENDER"
+            style="@style/HUD.Button.Danger" />
+
+    </LinearLayout>
+
     <Button
         android:id="@+id/btnBackToPanel"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:text="◀ VOLVER AL PANEL"
         style="@style/HUD.Button"
-        android:layout_marginTop="12dp"
         android:layout_marginBottom="4dp" />
 
     <LinearLayout

@@ -63,7 +63,6 @@ public class SessionViewModel extends AndroidViewModel {
         Session session = currentSession.getValue();
         if (session == null) return;
 
-        // Llenar caché ANTES de setValue para que el observer ya tenga los perfiles
         cachedProfiles = allProfiles != null ? allProfiles : new ArrayList<>();
 
         session.state = SessionState.ACTIVE;
@@ -99,13 +98,70 @@ public class SessionViewModel extends AndroidViewModel {
         }
     }
 
-    /** Procesa eventos entrantes SESSION_READY / SESSION_ENDED. */
+    /** Envía SESSION_PAUSE a los robots indicados y los marca como PAUSED. */
+    public void pauseSession(RobotViewModel robotViewModel, List<String> robotIds) {
+        Session session = currentSession.getValue();
+        if (session == null || robotIds == null || robotIds.isEmpty()) return;
+        try {
+            JSONArray ids = new JSONArray();
+            for (String id : robotIds) ids.put(id);
+            JSONObject payload = new JSONObject();
+            payload.put("sessionId", session.sessionId);
+            payload.put("robotIds", ids);
+            JSONObject msg = new JSONObject();
+            msg.put("type", AppConstants.MSG_SESSION_PAUSE);
+            msg.put("payload", payload.toString());
+            String msgStr = msg.toString();
+            for (String robotId : robotIds) robotViewModel.sendMessage(robotId, msgStr);
+        } catch (JSONException e) {
+            android.util.Log.e("SessionViewModel", "Error construyendo SESSION_PAUSE", e);
+        }
+        Map<String, RobotSessionStatus> current = new HashMap<>(safeStatuses());
+        for (String robotId : robotIds) {
+            RobotSessionStatus s = current.get(robotId);
+            if (s != null) s.state = RobotSessionState.PAUSED;
+        }
+        robotStatuses.postValue(current);
+    }
+
+    /** Envía SESSION_RESUME a los robots indicados. */
+    public void resumeSession(RobotViewModel robotViewModel, List<String> robotIds) {
+        Session session = currentSession.getValue();
+        if (session == null || robotIds == null || robotIds.isEmpty()) return;
+        try {
+            JSONArray ids = new JSONArray();
+            for (String id : robotIds) ids.put(id);
+            JSONObject payload = new JSONObject();
+            payload.put("sessionId", session.sessionId);
+            payload.put("robotIds", ids);
+            JSONObject msg = new JSONObject();
+            msg.put("type", AppConstants.MSG_SESSION_RESUME);
+            msg.put("payload", payload.toString());
+            String msgStr = msg.toString();
+            for (String robotId : robotIds) robotViewModel.sendMessage(robotId, msgStr);
+        } catch (JSONException e) {
+            android.util.Log.e("SessionViewModel", "Error construyendo SESSION_RESUME", e);
+        }
+    }
+
+    /** Devuelve los robotIds actualmente en estado PAUSED. */
+    public List<String> getPausedRobotIds() {
+        List<String> paused = new ArrayList<>();
+        for (RobotSessionStatus s : safeStatuses().values()) {
+            if (s.state == RobotSessionState.PAUSED) paused.add(s.robotId);
+        }
+        return paused;
+    }
+
+    /** Procesa eventos entrantes de robots. */
     public void handleIncomingEvent(ActivityEvent event) {
         if (event == null) return;
         RobotSessionState newState = null;
-        if (AppConstants.MSG_SESSION_READY.equals(event.type))  newState = RobotSessionState.READY;
-        if (AppConstants.MSG_SESSION_ENDED.equals(event.type))  newState = RobotSessionState.ENDED;
+        if (AppConstants.MSG_SESSION_READY.equals(event.type))      newState = RobotSessionState.READY;
+        if (AppConstants.MSG_SESSION_ENDED.equals(event.type))      newState = RobotSessionState.ENDED;
         if (AppConstants.MSG_PICTOGRAM_SELECTED.equals(event.type)) newState = RobotSessionState.IN_ACTIVITY;
+        if (AppConstants.MSG_SESSION_PAUSED.equals(event.type))     newState = RobotSessionState.PAUSED;
+        if (AppConstants.MSG_SESSION_RESUMED.equals(event.type))    newState = RobotSessionState.IN_ACTIVITY;
         if (newState == null) return;
 
         Map<String, RobotSessionStatus> current = new HashMap<>(safeStatuses());
@@ -150,7 +206,6 @@ public class SessionViewModel extends AndroidViewModel {
         }
     }
 
-    /** Devuelve el nombre del alumno por profileId, o null si no se encuentra. */
     public String getStudentName(String profileId) {
         StudentProfileEntity p = findProfile(cachedProfiles, profileId);
         return p != null ? p.name : null;
