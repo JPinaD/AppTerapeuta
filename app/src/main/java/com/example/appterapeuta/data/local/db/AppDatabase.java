@@ -77,7 +77,7 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
-    // v3 → v4: añade tablas de historial (session_records, activity_results, alumn_results, incidents)
+    // v3 -> v4: tablas de historial con indices correctos
     static final Migration MIGRATION_3_4 = new Migration(3, 4) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase db) {
@@ -87,14 +87,18 @@ public abstract class AppDatabase extends RoomDatabase {
                     "endTimestamp INTEGER NOT NULL, " +
                     "robotIdsJson TEXT, " +
                     "robotToStudentJson TEXT)");
+
             db.execSQL("CREATE TABLE IF NOT EXISTS activity_results (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                     "sessionId TEXT, " +
                     "activityId TEXT, " +
                     "FOREIGN KEY(sessionId) REFERENCES session_records(sessionId) ON DELETE CASCADE)");
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_activity_results_sessionId " +
+                    "ON activity_results(sessionId)");
+
             db.execSQL("CREATE TABLE IF NOT EXISTS alumn_results (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "activityResultId INTEGER, " +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "activityResultId INTEGER NOT NULL, " +
                     "studentId TEXT, " +
                     "studentName TEXT, " +
                     "attempts INTEGER NOT NULL, " +
@@ -102,14 +106,19 @@ public abstract class AppDatabase extends RoomDatabase {
                     "avgResponseTimeMs INTEGER NOT NULL, " +
                     "finalPictogramId TEXT, " +
                     "FOREIGN KEY(activityResultId) REFERENCES activity_results(id) ON DELETE CASCADE)");
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_alumn_results_activityResultId " +
+                    "ON alumn_results(activityResultId)");
+
             db.execSQL("CREATE TABLE IF NOT EXISTS incidents (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                     "sessionId TEXT, " +
                     "robotId TEXT, " +
                     "studentId TEXT, " +
                     "timestamp INTEGER NOT NULL, " +
                     "reason TEXT, " +
                     "FOREIGN KEY(sessionId) REFERENCES session_records(sessionId) ON DELETE CASCADE)");
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_incidents_sessionId " +
+                    "ON incidents(sessionId)");
         }
     };
 
