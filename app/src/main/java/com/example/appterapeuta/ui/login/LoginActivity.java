@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.appterapeuta.R;
+import com.example.appterapeuta.SessionManager;
 import com.example.appterapeuta.ui.dashboard.MainDashboardActivity;
 import com.example.appterapeuta.ui.therapists.TherapistManagementActivity;
 import com.example.appterapeuta.viewmodel.LoginViewModel;
@@ -29,11 +30,14 @@ public class LoginActivity extends AppCompatActivity {
 
         vm.getLoginResult().observe(this, result -> {
             if (result == LoginViewModel.LoginResult.SUCCESS) {
+                SessionManager.getInstance().login(
+                        etUsername.getText().toString().trim(), false);
                 startActivity(new Intent(this, MainDashboardActivity.class));
                 finish();
             } else if (result == LoginViewModel.LoginResult.SUCCESS_ROOT) {
-                Intent i = new Intent(this, TherapistManagementActivity.class);
-                startActivity(i);
+                SessionManager.getInstance().login(
+                        etUsername.getText().toString().trim(), true);
+                startActivity(new Intent(this, TherapistManagementActivity.class));
                 finish();
             } else {
                 tvError.setVisibility(View.VISIBLE);

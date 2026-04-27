@@ -35,7 +35,7 @@
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:text="&#9208;  PARADA DE EMERGENCIA"
-        android:backgroundTint="#7C3AED"
+        android:backgroundTint="@color/hud_accent_violet"
         android:textColor="#FFFFFF"
         android:fontFamily="monospace"
         android:textStyle="bold"

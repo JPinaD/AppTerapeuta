@@ -45,7 +45,6 @@ public class TherapistManagementActivity extends AppCompatActivity {
         // Root puede entrar al dashboard también
         findViewById(R.id.back_button).setOnClickListener(v -> {
             Intent intent = new Intent(this, MainDashboardActivity.class);
-            intent.putExtra("is_root", true);
             startActivity(intent);
             finish();
         });

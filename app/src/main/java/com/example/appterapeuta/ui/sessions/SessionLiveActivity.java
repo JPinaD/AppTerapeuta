@@ -26,7 +26,8 @@ import java.util.Map;
 
 public class SessionLiveActivity extends AppCompatActivity
         implements PauseTargetDialog.OnRobotsPausedListener,
-                   IncidentReasonDialog.OnIncidentConfirmedListener {
+                   IncidentReasonDialog.OnIncidentConfirmedListener,
+                   FeedbackDialog.OnFeedbackSentListener {
 
     private SessionViewModel sessionViewModel;
     private RobotViewModel robotViewModel;
@@ -151,5 +152,11 @@ public class SessionLiveActivity extends AppCompatActivity
         Map<String, RobotSessionStatus> statuses = sessionViewModel.getRobotStatuses().getValue();
         if (statuses == null) return new ArrayList<>();
         return new ArrayList<>(statuses.keySet());
+    }
+
+    /** Callback de FeedbackDialog */
+    @Override
+    public void onFeedbackSent(String robotId, String message) {
+        sessionViewModel.sendFeedback(robotViewModel, robotId, message);
     }
 }

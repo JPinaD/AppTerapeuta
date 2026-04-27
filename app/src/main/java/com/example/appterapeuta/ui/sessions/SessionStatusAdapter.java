@@ -3,6 +3,7 @@ package com.example.appterapeuta.ui.sessions;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -19,8 +20,13 @@ import java.util.Map;
 
 class SessionStatusAdapter extends RecyclerView.Adapter<SessionStatusAdapter.VH> {
 
+    interface OnFeedbackClickListener {
+        void onFeedbackClick(String robotId);
+    }
+
     private List<RobotSessionStatus> statuses = new ArrayList<>();
     private Map<String, RobotLiveStatus> liveStatuses;
+    private OnFeedbackClickListener feedbackListener;
 
     void setStatuses(List<RobotSessionStatus> list) {
         statuses = list != null ? list : new ArrayList<>();
@@ -30,6 +36,10 @@ class SessionStatusAdapter extends RecyclerView.Adapter<SessionStatusAdapter.VH>
     void setLiveStatuses(Map<String, RobotLiveStatus> live) {
         liveStatuses = live;
         notifyDataSetChanged();
+    }
+
+    void setFeedbackListener(OnFeedbackClickListener listener) {
+        this.feedbackListener = listener;
     }
 
     @NonNull
@@ -55,6 +65,10 @@ class SessionStatusAdapter extends RecyclerView.Adapter<SessionStatusAdapter.VH>
         } else {
             holder.tvTelemetry.setText("");
         }
+
+        holder.btnFeedback.setOnClickListener(v -> {
+            if (feedbackListener != null) feedbackListener.onFeedbackClick(s.robotId);
+        });
     }
 
     @Override
@@ -65,6 +79,7 @@ class SessionStatusAdapter extends RecyclerView.Adapter<SessionStatusAdapter.VH>
             case WAITING:     return "⏳ Esperando";
             case READY:       return "✅ Listo";
             case IN_ACTIVITY: return "▶ En actividad";
+            case PAUSED:      return "⏸ Pausado";
             case ENDED:       return "🏁 Finalizado";
             case ERROR:       return "❌ Error";
             default:          return state.name();
@@ -73,11 +88,13 @@ class SessionStatusAdapter extends RecyclerView.Adapter<SessionStatusAdapter.VH>
 
     static class VH extends RecyclerView.ViewHolder {
         TextView tvName, tvState, tvTelemetry;
+        Button btnFeedback;
         VH(@NonNull View v) {
             super(v);
             tvName      = v.findViewById(R.id.tvRobotName);
             tvState     = v.findViewById(R.id.tvSessionState);
             tvTelemetry = v.findViewById(R.id.tvTelemetry);
+            btnFeedback = v.findViewById(R.id.btnFeedback);
         }
     }
 }

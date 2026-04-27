@@ -179,6 +179,20 @@ public class SessionViewModel extends AndroidViewModel {
         return p != null ? p.name : null;
     }
 
+    /** Envia un mensaje de feedback a un robot concreto durante la sesion. */
+    public void sendFeedback(RobotViewModel robotViewModel, String robotId, String message) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("text", message);
+            JSONObject msg = new JSONObject();
+            msg.put("type", AppConstants.MSG_ROBOT_FEEDBACK);
+            msg.put("payload", payload.toString());
+            robotViewModel.sendMessage(robotId, msg.toString());
+        } catch (JSONException e) {
+            android.util.Log.e("SessionViewModel", "Error construyendo ROBOT_FEEDBACK", e);
+        }
+    }
+
     // --- privado ---
 
     private void persistSessionRecord(Session session) {
