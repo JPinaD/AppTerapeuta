@@ -67,8 +67,27 @@
         android:id="@+id/spinnerActivity"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
         android:backgroundTint="@color/hud_accent_cyan" />
+
+    <Button
+        android:id="@+id/btnSelectContent"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:text="SELECCIONAR CONTENIDO"
+        android:visibility="gone"
+        style="@style/HUD.Button"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/tvContentSummary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:fontFamily="monospace"
+        android:textColor="@color/hud_text_secondary"
+        android:visibility="gone"
+        android:layout_marginBottom="12dp" />
 
     <Button
         android:id="@+id/btnStartSession"

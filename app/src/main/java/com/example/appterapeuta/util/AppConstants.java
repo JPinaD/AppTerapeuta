@@ -7,10 +7,22 @@ public class AppConstants {
     public static final String MSG_PING = "PING";
     public static final String MSG_PONG = "PONG";
 
-    // Actividad pictograma v1
+    // Actividades
     public static final String MSG_ACTIVITY_START     = "ACTIVITY_START";
+    public static final String MSG_ACTIVITY_RESULT    = "ACTIVITY_RESULT";
     public static final String MSG_PICTOGRAM_SELECTED = "PICTOGRAM_SELECTED";
     public static final String MSG_ROBOT_FEEDBACK     = "ROBOT_FEEDBACK";
+    public static final String MSG_TURN_SIGNAL        = "TURN_SIGNAL";
+    public static final String MSG_TURN_DONE          = "TURN_DONE";
+
+    // IDs de actividades
+    public static final String ACTIVITY_PICTOGRAM        = "activity_pictogram";
+    public static final String ACTIVITY_PICTOGRAM_LEGACY = "pictogram_v1";
+    public static final String ACTIVITY_EMOTION          = "activity_emotion";
+    public static final String ACTIVITY_SOCIAL           = "activity_social";
+    public static final String ACTIVITY_SEQUENCE         = "activity_sequence";
+    public static final String ACTIVITY_CALM             = "activity_calm";
+    public static final String ACTIVITY_TURNS            = "activity_turns";
 
     // Sesiones
     public static final String MSG_SESSION_START  = "SESSION_START";

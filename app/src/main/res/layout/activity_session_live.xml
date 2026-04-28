@@ -29,6 +29,19 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
+    <!-- Momento Calma -->
+    <Button
+        android:id="@+id/btnActivateCalm"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="&#9675;  MOMENTO CALMA"
+        android:backgroundTint="#80DEEA"
+        android:textColor="#212121"
+        android:fontFamily="monospace"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp" />
+
     <!-- Parada de emergencia -->
     <Button
         android:id="@+id/btnEmergencyStop"
@@ -39,7 +52,7 @@
         android:textColor="#FFFFFF"
         android:fontFamily="monospace"
         android:textStyle="bold"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp" />
 
     <!-- Controles de pausa: visibles solo cuando hay robots PAUSED -->

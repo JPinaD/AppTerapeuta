@@ -16,6 +16,7 @@ import com.example.appterapeuta.data.local.entity.IncidentEntity;
 import com.example.appterapeuta.data.model.RobotSessionState;
 import com.example.appterapeuta.data.model.RobotSessionStatus;
 import com.example.appterapeuta.data.repository.IncidentRepository;
+import com.example.appterapeuta.util.AppConstants;
 import com.example.appterapeuta.viewmodel.ControlCenterViewModel;
 import com.example.appterapeuta.viewmodel.RobotViewModel;
 import com.example.appterapeuta.viewmodel.SessionViewModel;
@@ -57,10 +58,20 @@ public class SessionLiveActivity extends AppCompatActivity
 
         controlCenterViewModel.getLiveStatuses().observe(this, adapter::setLiveStatuses);
 
-        robotViewModel.getActivityEvents().observe(this, event ->
-                sessionViewModel.handleIncomingEvent(event));
+        robotViewModel.getActivityEvents().observe(this, event -> {
+            if (event == null) return;
+            if (AppConstants.MSG_TURN_DONE.equals(event.type)) {
+                sessionViewModel.handleTurnDone(robotViewModel, event.robotId);
+            } else {
+                sessionViewModel.handleIncomingEvent(event);
+            }
+        });
 
         layoutPauseControls = findViewById(R.id.layoutPauseControls);
+
+        // Momento Calma
+        findViewById(R.id.btnActivateCalm).setOnClickListener(v ->
+                sessionViewModel.activateCalm(robotViewModel));
 
         // Parada de emergencia
         findViewById(R.id.btnEmergencyStop).setOnClickListener(v -> {
@@ -76,11 +87,10 @@ public class SessionLiveActivity extends AppCompatActivity
             if (!paused.isEmpty()) sessionViewModel.resumeSession(robotViewModel, paused);
         });
 
-        // Suspender desde pausa (con diálogo de motivo para cada robot pausado)
+        // Suspender desde pausa
         findViewById(R.id.btnSuspend).setOnClickListener(v -> {
             List<String> paused = sessionViewModel.getPausedRobotIds();
             if (!paused.isEmpty()) {
-                // Mostrar diálogo para el primer robot pausado; si hay varios se suspenden todos tras confirmar
                 IncidentReasonDialog.newInstance(String.join(", ", paused))
                         .show(getSupportFragmentManager(), "incident_dialog");
             } else {
@@ -112,16 +122,13 @@ public class SessionLiveActivity extends AppCompatActivity
         });
     }
 
-    /** Callback de PauseTargetDialog */
     @Override
     public void onRobotsPause(List<String> robotIds) {
         sessionViewModel.pauseSession(robotViewModel, robotIds);
     }
 
-    /** Callback de IncidentReasonDialog */
     @Override
     public void onIncidentConfirmed(String robotId, String reason) {
-        // Persistir incidencia por cada robot pausado si se proporcionó motivo
         if (reason != null && !reason.isEmpty()) {
             com.example.appterapeuta.data.model.Session session =
                     sessionViewModel.getCurrentSession().getValue();
@@ -152,4 +159,5 @@ public class SessionLiveActivity extends AppCompatActivity
         if (statuses == null) return new ArrayList<>();
         return new ArrayList<>(statuses.keySet());
     }
+
 }

@@ -105,7 +105,7 @@ public class PictogramActivityLauncherActivity extends AppCompatActivity {
             for (String id : PICTOGRAM_IDS) pics.put(id);
 
             JSONObject payload = new JSONObject();
-            payload.put("activityId", "pictogram_v1");
+            payload.put("activityId", AppConstants.ACTIVITY_PICTOGRAM);
             payload.put("pictograms", pics);
 
             // Incluir perfil del alumno si hay uno seleccionado
