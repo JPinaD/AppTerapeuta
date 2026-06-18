@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.appterapeuta.R;
 import com.example.appterapeuta.ui.dashboard.MainDashboardActivity;
-import com.example.appterapeuta.ui.therapists.TherapistManagementActivity;
 import com.example.appterapeuta.viewmodel.LoginViewModel;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -32,7 +31,8 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(new Intent(this, MainDashboardActivity.class));
                 finish();
             } else if (result == LoginViewModel.LoginResult.SUCCESS_ROOT) {
-                Intent i = new Intent(this, TherapistManagementActivity.class);
+                Intent i = new Intent(this, MainDashboardActivity.class);
+                i.putExtra("is_root", true);
                 startActivity(i);
                 finish();
             } else {

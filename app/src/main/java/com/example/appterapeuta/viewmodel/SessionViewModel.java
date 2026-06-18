@@ -7,6 +7,8 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.appterapeuta.data.local.entity.ActivityResultEntity;
+import com.example.appterapeuta.data.local.entity.AlumnResultEntity;
 import com.example.appterapeuta.data.local.entity.SessionRecordEntity;
 import com.example.appterapeuta.data.local.entity.StudentProfileEntity;
 import com.example.appterapeuta.data.model.ActivityEvent;
@@ -14,6 +16,8 @@ import com.example.appterapeuta.data.model.RobotSessionState;
 import com.example.appterapeuta.data.model.RobotSessionStatus;
 import com.example.appterapeuta.data.model.Session;
 import com.example.appterapeuta.data.model.SessionState;
+import com.example.appterapeuta.data.model.SocialScenario;
+import com.example.appterapeuta.data.repository.ActivityResultRepository;
 import com.example.appterapeuta.data.repository.SessionRecordRepository;
 import com.example.appterapeuta.data.repository.StudentProfileRepository;
 import com.example.appterapeuta.util.AppConstants;
@@ -41,10 +45,23 @@ public class SessionViewModel extends AndroidViewModel {
     private List<StudentProfileEntity> cachedProfiles = new ArrayList<>();
     private long sessionStartTimestamp = 0;
 
+    // Acumulador de resultados por robot
+    private final Map<String, int[]> resultAccumulator = new HashMap<>(); // robotId → [attempts, successes]
+
+    // Contenido de actividad seleccionado
+    private List<String> activityItemIds = new ArrayList<>();
+    private List<SocialScenario> socialScenarios = new ArrayList<>();
+    private int sequenceLength = 2;
+
+    // Estado de turnos
+    private List<String> turnOrder = new ArrayList<>();
+    private int currentTurnIndex = 0;
+
     public SessionViewModel(@NonNull Application application) {
         super(application);
-        profileRepository      = new StudentProfileRepository(application);
-        sessionRecordRepository = new SessionRecordRepository(application);
+        profileRepository        = new StudentProfileRepository(application);
+        sessionRecordRepository  = new SessionRecordRepository(application);
+        activityResultRepository = new ActivityResultRepository(application);
     }
 
     public LiveData<Session> getCurrentSession()                          { return currentSession; }
@@ -52,14 +69,28 @@ public class SessionViewModel extends AndroidViewModel {
 
     public void prepareSession(List<String> robotIds,
                                Map<String, String> robotToProfileId,
-                               String activityId) {
+                               String activityId,
+                               List<String> itemIds,
+                               List<SocialScenario> scenarios,
+                               int seqLength) {
         String sessionId = UUID.randomUUID().toString();
         Session session = new Session(sessionId, robotIds, robotToProfileId, activityId);
         currentSession.setValue(session);
 
+        activityItemIds  = itemIds != null ? new ArrayList<>(itemIds) : new ArrayList<>();
+        socialScenarios  = scenarios != null ? new ArrayList<>(scenarios) : new ArrayList<>();
+        sequenceLength   = seqLength > 0 ? seqLength : 2;
+
         Map<String, RobotSessionStatus> statuses = new HashMap<>();
         for (String id : robotIds) statuses.put(id, new RobotSessionStatus(id, RobotSessionState.WAITING));
         robotStatuses.setValue(statuses);
+    }
+
+    /** Sobrecarga de compatibilidad para llamadas sin contenido (pictogram). */
+    public void prepareSession(List<String> robotIds,
+                               Map<String, String> robotToProfileId,
+                               String activityId) {
+        prepareSession(robotIds, robotToProfileId, activityId, null, null, 2);
     }
 
     public void startSession(RobotViewModel robotViewModel,
@@ -102,6 +133,8 @@ public class SessionViewModel extends AndroidViewModel {
         }
 
         persistSessionRecord(session);
+        persistActivityResults(session);
+        resultAccumulator.clear();
     }
 
     public void pauseSession(RobotViewModel robotViewModel, List<String> robotIds) {
@@ -158,6 +191,16 @@ public class SessionViewModel extends AndroidViewModel {
 
     public void handleIncomingEvent(ActivityEvent event) {
         if (event == null) return;
+
+        if (AppConstants.MSG_TURN_DONE.equals(event.type)) {
+            return; // Se maneja en SessionLiveActivity con acceso al robotViewModel
+        }
+
+        // Acumular resultados de actividad
+        if (AppConstants.MSG_ACTIVITY_RESULT.equals(event.type)) {
+            accumulateResult(event);
+        }
+
         RobotSessionState newState = null;
         if (AppConstants.MSG_SESSION_READY.equals(event.type))      newState = RobotSessionState.READY;
         if (AppConstants.MSG_SESSION_ENDED.equals(event.type))      newState = RobotSessionState.ENDED;
@@ -171,6 +214,64 @@ public class SessionViewModel extends AndroidViewModel {
         if (status != null) {
             status.state = newState;
             robotStatuses.postValue(current);
+        }
+    }
+
+    private void accumulateResult(ActivityEvent event) {
+        try {
+            JSONObject payload = new JSONObject(event.payload);
+            boolean correct = payload.optBoolean("correct", false);
+            int[] counts = resultAccumulator.get(event.robotId);
+            if (counts == null) {
+                counts = new int[]{0, 0};
+                resultAccumulator.put(event.robotId, counts);
+            }
+            counts[0]++; // attempts
+            if (correct) counts[1]++; // successes
+        } catch (JSONException e) {
+            android.util.Log.e("SessionViewModel", "Error parsing ACTIVITY_RESULT payload", e);
+        }
+    }
+
+    /** Gestiona TURN_DONE: avanza al siguiente robot, salta desconectados. */
+    public void handleTurnDone(RobotViewModel robotViewModel, String robotId) {
+        Session session = currentSession.getValue();
+        if (session == null || turnOrder.isEmpty()) return;
+
+        // Avanzar al siguiente robot en el orden
+        currentTurnIndex = (currentTurnIndex + 1) % turnOrder.size();
+
+        // Saltar robots desconectados (máximo una vuelta completa)
+        int attempts = 0;
+        while (attempts < turnOrder.size()) {
+            String nextRobotId = turnOrder.get(currentTurnIndex);
+            if (isRobotConnected(nextRobotId)) {
+                sendTurnSignals(robotViewModel, session.sessionId, nextRobotId);
+                return;
+            }
+            currentTurnIndex = (currentTurnIndex + 1) % turnOrder.size();
+            attempts++;
+        }
+        android.util.Log.w("SessionViewModel", "Todos los robots desconectados en activity_turns");
+    }
+
+    /** Activa activity_calm en todos los robots de la sesión activa. */
+    public void activateCalm(RobotViewModel robotViewModel) {
+        Session session = currentSession.getValue();
+        if (session == null) return;
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("sessionId", session.sessionId);
+            payload.put("activityId", AppConstants.ACTIVITY_CALM);
+            JSONObject msg = new JSONObject();
+            msg.put("type", AppConstants.MSG_SESSION_START);
+            msg.put("payload", payload.toString());
+            String msgStr = msg.toString();
+            for (String robotId : session.participatingRobotIds) {
+                robotViewModel.sendMessage(robotId, msgStr);
+            }
+        } catch (JSONException e) {
+            android.util.Log.e("SessionViewModel", "Error construyendo activateCalm", e);
         }
     }
 
@@ -202,6 +303,28 @@ public class SessionViewModel extends AndroidViewModel {
         } catch (JSONException e) {
             android.util.Log.e("SessionViewModel", "Error persistiendo SessionRecord", e);
         }
+    }
+
+    private void persistActivityResults(Session session) {
+        if (resultAccumulator.isEmpty()) return;
+
+        ActivityResultEntity activityResult = new ActivityResultEntity(
+                session.sessionId, session.activityId);
+
+        List<AlumnResultEntity> alumnResults = new ArrayList<>();
+        for (Map.Entry<String, int[]> entry : resultAccumulator.entrySet()) {
+            String robotId = entry.getKey();
+            int[] counts = entry.getValue();
+            String profileId = session.robotToStudentProfileId.get(robotId);
+            StudentProfileEntity profile = findProfile(cachedProfiles, profileId);
+            String studentName = profile != null ? profile.name : robotId;
+            String studentId = profileId != null ? profileId : robotId;
+
+            alumnResults.add(new AlumnResultEntity(
+                    0, studentId, studentName, counts[0], counts[1], 0, null));
+        }
+
+        activityResultRepository.saveActivityResult(activityResult, alumnResults);
     }
 
     private String buildSessionStartMessage(Session session, StudentProfileEntity profile) {

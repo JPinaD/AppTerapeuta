@@ -34,6 +34,7 @@ public class TcpClient {
     private Socket socket;
     private PrintWriter out;
     private volatile boolean connected = false;
+    private volatile boolean errorFired = false;
 
     public TcpClient(String host, int port, ConnectionListener listener) {
         this.host = host;
@@ -58,11 +59,11 @@ public class TcpClient {
                     listener.onMessage(msg);
                 }
             } catch (IOException e) {
-                if (connected) listener.onError(e);
-                else listener.onError(e);
+                if (connected) { errorFired = true; listener.onError(e); }
             } finally {
                 connected = false;
-                listener.onDisconnected();
+                if (!errorFired) listener.onDisconnected();
+                errorFired = false;
                 close();
             }
         });

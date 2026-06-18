@@ -43,7 +43,9 @@ public class AppTerapeutaApp extends Application {
                 String studentName = sessionViewModel.getStudentName(profileId);
                 controlCenterViewModel.setAssignedStudent(robotId, studentName);
             }
-        });        // Telemetría: listener directo para no perder eventos por sobreescritura de LiveData
+        });
+
+        // Telemetría: listener directo para no perder eventos por sobreescritura de LiveData
         robotViewModel.setTelemetryListener((robotId, message) -> {
             try {
                 org.json.JSONObject obj = new org.json.JSONObject(message);
@@ -59,6 +61,9 @@ public class AppTerapeutaApp extends Application {
                 controlCenterViewModel.onConnectionStateChanged(e.getKey(), e.getValue().state);
             }
         });
+
+        // Iniciar descubrimiento NSD al arrancar la app
+        robotViewModel.startDiscovery();
     }
 
     public RobotViewModel getRobotViewModel()                 { return robotViewModel; }

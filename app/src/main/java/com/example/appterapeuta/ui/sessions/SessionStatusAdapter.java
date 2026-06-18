@@ -49,7 +49,7 @@ class SessionStatusAdapter extends RecyclerView.Adapter<SessionStatusAdapter.VH>
         RobotLiveStatus live = liveStatuses != null ? liveStatuses.get(s.robotId) : null;
         if (live != null) {
             String bat  = live.batteryPct  != null ? live.batteryPct  + "%" : "—";
-            String act  = live.activityId  != null ? live.activityId       : "—";
+            String act  = live.activityId  != null ? activityLabel(live.activityId) : "—";
             String prog = live.progressPct != null ? live.progressPct + "%" : "—";
             holder.tvTelemetry.setText("BAT: " + bat + "  |  ACT: " + act + "  |  PROG: " + prog);
         } else {
@@ -65,13 +65,27 @@ class SessionStatusAdapter extends RecyclerView.Adapter<SessionStatusAdapter.VH>
             case WAITING:     return "⏳ Esperando";
             case READY:       return "✅ Listo";
             case IN_ACTIVITY: return "▶ En actividad";
+            case PAUSED:      return "⏸ Pausado";
             case ENDED:       return "🏁 Finalizado";
             case ERROR:       return "❌ Error";
             default:          return state.name();
         }
     }
 
-    static class VH extends RecyclerView.ViewHolder {
+    private String activityLabel(String id) {
+        if (id == null) return "2014";
+        switch (id) {
+            case "activity_pictogram": return "Pictogramas";
+            case "activity_emotion":  return "Emociones";
+            case "activity_social":   return "Escenarios";
+            case "activity_sequence": return "Secuencias";
+            case "activity_calm":     return "Calma";
+            case "activity_turns":    return "Turnos";
+            default:                  return id;
+        }
+    }
+
+        static class VH extends RecyclerView.ViewHolder {
         TextView tvName, tvState, tvTelemetry;
         VH(@NonNull View v) {
             super(v);

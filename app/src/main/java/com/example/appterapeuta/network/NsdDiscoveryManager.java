@@ -8,7 +8,9 @@ import android.util.Log;
 import com.example.appterapeuta.data.model.DiscoveredRobot;
 import com.example.appterapeuta.util.AppConstants;
 
+import java.util.ArrayDeque;
 import java.util.Map;
+import java.util.Queue;
 
 public class NsdDiscoveryManager {
 
@@ -23,6 +25,7 @@ public class NsdDiscoveryManager {
     private NsdManager.DiscoveryListener discoveryListener;
     private OnRobotDiscoveredListener listener;
     private boolean resolving = false;
+    private final Queue<NsdServiceInfo> pendingResolves = new ArrayDeque<>();
 
     public NsdDiscoveryManager(Context context) {
         nsdManager = (NsdManager) context.getSystemService(Context.NSD_SERVICE);
@@ -67,11 +70,13 @@ public class NsdDiscoveryManager {
             discoveryListener = null;
         }
         listener = null;
+        pendingResolves.clear();
     }
 
     private void resolveService(NsdServiceInfo serviceInfo) {
         if (resolving) {
-            Log.d(TAG, "Resolucion en curso, se omite: " + serviceInfo.getServiceName());
+            pendingResolves.offer(serviceInfo);
+            Log.d(TAG, "Resolucion en curso, encolado: " + serviceInfo.getServiceName());
             return;
         }
         resolving = true;
@@ -80,19 +85,29 @@ public class NsdDiscoveryManager {
             @Override public void onResolveFailed(NsdServiceInfo info, int errorCode) {
                 Log.e(TAG, "Resolucion fallida para " + info.getServiceName() + ": " + errorCode);
                 resolving = false;
+                resolveNext();
             }
             @Override public void onServiceResolved(NsdServiceInfo info) {
                 resolving = false;
-                if (listener == null) return;
-                String host = info.getHost().getHostAddress();
-                String robotId = null;
-                Map<String, byte[]> attrs = info.getAttributes();
-                if (attrs != null && attrs.containsKey(AppConstants.NSD_ATTR_ROBOT_ID)) {
-                    byte[] val = attrs.get(AppConstants.NSD_ATTR_ROBOT_ID);
-                    if (val != null) robotId = new String(val);
+                if (listener != null) {
+                    String host = info.getHost().getHostAddress();
+                    String robotId = null;
+                    Map<String, byte[]> attrs = info.getAttributes();
+                    if (attrs != null && attrs.containsKey(AppConstants.NSD_ATTR_ROBOT_ID)) {
+                        byte[] val = attrs.get(AppConstants.NSD_ATTR_ROBOT_ID);
+                        if (val != null) robotId = new String(val);
+                    }
+                    listener.onRobotFound(new DiscoveredRobot(info.getServiceName(), host, info.getPort(), robotId));
                 }
-                listener.onRobotFound(new DiscoveredRobot(info.getServiceName(), host, info.getPort(), robotId));
+                resolveNext();
             }
         });
+    }
+
+    private void resolveNext() {
+        NsdServiceInfo next = pendingResolves.poll();
+        if (next != null) {
+            resolveService(next);
+        }
     }
 }
