@@ -38,7 +38,7 @@
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:text="⚙ GESTIÓN DE TERAPEUTAS"
-            android:backgroundTint="#7C3AED"
+            android:backgroundTint="@color/hud_accent_violet"
             android:textColor="#FFFFFF"
             android:fontFamily="monospace"
             android:textSize="12sp"

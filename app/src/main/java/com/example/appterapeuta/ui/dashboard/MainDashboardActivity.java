@@ -45,7 +45,16 @@ public class MainDashboardActivity extends AppCompatActivity {
         // RecyclerView de robots
         RecyclerView rvRobots = findViewById(R.id.rvRobots);
         rvRobots.setLayoutManager(new LinearLayoutManager(this));
-        robotAdapter = new RobotDashboardAdapter(robot -> showDeleteRobotDialog(robot));
+        robotAdapter = new RobotDashboardAdapter(robot -> {
+            // Long press: abrir detalle del robot
+            android.content.Intent intent = new android.content.Intent(this,
+                    com.example.appterapeuta.ui.robots.RobotDetailActivity.class);
+            intent.putExtra(com.example.appterapeuta.ui.robots.RobotDetailActivity.EXTRA_ROBOT_ID, robot.robotId);
+            intent.putExtra(com.example.appterapeuta.ui.robots.RobotDetailActivity.EXTRA_ROBOT_NAME, robot.name);
+            intent.putExtra(com.example.appterapeuta.ui.robots.RobotDetailActivity.EXTRA_ROBOT_HOST,
+                    robot.lastKnownHost != null ? robot.lastKnownHost + ":" + robot.lastKnownPort : null);
+            startActivity(intent);
+        });
         rvRobots.setAdapter(robotAdapter);
 
         // Observar robots configurados + estados en vivo
@@ -77,7 +86,7 @@ public class MainDashboardActivity extends AppCompatActivity {
 
         // Botón gestión terapeutas (solo visible para root)
         android.widget.Button btnManageTherapists = findViewById(R.id.btnManageTherapists);
-        if (getIntent().getBooleanExtra("is_root", false)) {
+        if (com.example.appterapeuta.SessionManager.getInstance().isRoot()) {
             btnManageTherapists.setVisibility(android.view.View.VISIBLE);
         }
         btnManageTherapists.setOnClickListener(v ->

@@ -1,6 +1,7 @@
 package com.example.appterapeuta.ui.history;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -22,12 +23,17 @@ import java.util.Locale;
 
 public class SessionResultDetailActivity extends AppCompatActivity {
 
-    private static final SimpleDateFormat SDF = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+    private static final SimpleDateFormat SDF =
+            new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+
+    private LayoutInflater inflater;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_session_result_detail);
+
+        inflater = LayoutInflater.from(this);
 
         String sessionId = getIntent().getStringExtra("session_id");
         if (sessionId == null) { finish(); return; }
@@ -44,11 +50,10 @@ public class SessionResultDetailActivity extends AppCompatActivity {
 
         SessionRecordEntity s = detail.session;
         long durationMin = (s.endTimestamp - s.startTimestamp) / 60000;
-        TextView tvHeader = findViewById(R.id.tvSessionHeader);
-        tvHeader.setText(
+        ((TextView) findViewById(R.id.tvSessionHeader)).setText(
                 "Inicio: " + SDF.format(new Date(s.startTimestamp)) + "\n" +
                 "Fin:    " + SDF.format(new Date(s.endTimestamp)) + "\n" +
-                "Duración: " + durationMin + " min\n" +
+                "Duracion: " + durationMin + " min\n" +
                 "Robots: " + (s.robotIdsJson != null ? s.robotIdsJson : "—")
         );
 
@@ -68,11 +73,11 @@ public class SessionResultDetailActivity extends AppCompatActivity {
         if (detail.incidents != null && !detail.incidents.isEmpty()) {
             tvIncidentsHeader.setVisibility(View.VISIBLE);
             for (IncidentEntity inc : detail.incidents) {
-                TextView tv = makeTextView(
-                        "Robot: " + inc.robotId + " | " +
+                TextView tv = (TextView) inflater.inflate(
+                        R.layout.item_incident_result, layoutIncidents, false);
+                tv.setText("Robot: " + inc.robotId + " | " +
                         SDF.format(new Date(inc.timestamp)) + "\n" +
-                        "Motivo: " + (inc.reason != null ? inc.reason : "—")
-                );
+                        "Motivo: " + (inc.reason != null ? inc.reason : "—"));
                 layoutIncidents.addView(tv);
             }
         }
@@ -80,9 +85,9 @@ public class SessionResultDetailActivity extends AppCompatActivity {
 
     private void addActivitySection(LinearLayout parent, ActivityResultEntity ar,
                                     List<AlumnResultEntity> alumnResults) {
-        // Cabecera actividad (expandible al pulsar)
-        TextView tvActivity = makeTextView("▶ Actividad: " + ar.activityId);
-        tvActivity.setTextColor(getColor(R.color.hud_accent_cyan));
+        TextView tvActivity = (TextView) inflater.inflate(
+                R.layout.item_activity_result, parent, false);
+        tvActivity.setText("▶ Actividad: " + ar.activityId);
 
         LinearLayout layoutAlumns = new LinearLayout(this);
         layoutAlumns.setOrientation(LinearLayout.VERTICAL);
@@ -91,13 +96,14 @@ public class SessionResultDetailActivity extends AppCompatActivity {
         if (alumnResults != null) {
             for (AlumnResultEntity alumn : alumnResults) {
                 if (alumn.activityResultId == ar.id) {
-                    layoutAlumns.addView(makeTextView(
-                            "  " + alumn.studentName +
+                    TextView tvAlumn = (TextView) inflater.inflate(
+                            R.layout.item_alumn_result, layoutAlumns, false);
+                    tvAlumn.setText(alumn.studentName +
                             " | Intentos: " + alumn.attempts +
                             " | Aciertos: " + alumn.successes +
                             " | T.medio: " + alumn.avgResponseTimeMs + "ms" +
-                            (alumn.finalPictogramId != null ? " | Final: " + alumn.finalPictogramId : "")
-                    ));
+                            (alumn.finalPictogramId != null ? " | Final: " + alumn.finalPictogramId : ""));
+                    layoutAlumns.addView(tvAlumn);
                 }
             }
         }
@@ -108,16 +114,5 @@ public class SessionResultDetailActivity extends AppCompatActivity {
 
         parent.addView(tvActivity);
         parent.addView(layoutAlumns);
-    }
-
-    private TextView makeTextView(String text) {
-        TextView tv = new TextView(this);
-        tv.setText(text);
-        tv.setTextColor(getColor(R.color.hud_text_secondary));
-        tv.setTypeface(android.graphics.Typeface.MONOSPACE);
-        tv.setTextSize(12f);
-        int pad = (int) (6 * getResources().getDisplayMetrics().density);
-        tv.setPadding(0, pad, 0, pad);
-        return tv;
     }
 }
