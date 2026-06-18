@@ -41,7 +41,7 @@ import java.util.concurrent.Executors;
         IncidentEntity.class,
         TherapistEntity.class
     },
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
@@ -123,6 +123,22 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_5_6 = new Migration(5, 6) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("INSERT OR IGNORE INTO therapy_activities (id, name, description, difficulty) VALUES " +
+                    "('activity_emotion', 'Reconocimiento Emocional', 'El robot muestra una emoción y el alumno elige la respuesta correcta.', 1)");
+            db.execSQL("INSERT OR IGNORE INTO therapy_activities (id, name, description, difficulty) VALUES " +
+                    "('activity_social', 'Escenarios Sociales', 'El robot presenta una situación social y el alumno elige cómo responder.', 2)");
+            db.execSQL("INSERT OR IGNORE INTO therapy_activities (id, name, description, difficulty) VALUES " +
+                    "('activity_sequence', 'Secuencias Visuales', 'El alumno memoriza y reproduce una secuencia de elementos.', 2)");
+            db.execSQL("INSERT OR IGNORE INTO therapy_activities (id, name, description, difficulty) VALUES " +
+                    "('activity_calm', 'Momento Calma', 'Actividad pasiva de regulación. El robot muestra una animación de respiración.', 1)");
+            db.execSQL("INSERT OR IGNORE INTO therapy_activities (id, name, description, difficulty) VALUES " +
+                    "('activity_turns', 'Turnos Sociales', 'Actividad multi-robot. Los alumnos practican esperar y ceder el turno.', 3)");
+        }
+    };
+
     public static AppDatabase getInstance(Context context) {
         if (instance == null) {
             synchronized (AppDatabase.class) {
@@ -132,17 +148,32 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             "appterapeuta.db"
                     )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                     .addCallback(new Callback() {
                         @Override
                         public void onCreate(@NonNull SupportSQLiteDatabase db) {
                             super.onCreate(db);
                             Executors.newSingleThreadExecutor().execute(() -> {
                                 AppDatabase adb = getInstance(context);
-                                // Actividad por defecto
+                                // Catálogo de actividades
                                 adb.therapyActivityDao().insert(new TherapyActivityEntity(
-                                        "pictogram_v1", "El robot quiere decir algo",
+                                        "activity_pictogram", "Pictogramas",
                                         "El alumno elige un pictograma para comunicarse con el robot.", 1));
+                                adb.therapyActivityDao().insert(new TherapyActivityEntity(
+                                        "activity_emotion", "Reconocimiento Emocional",
+                                        "El robot muestra una emoción y el alumno elige la respuesta correcta.", 1));
+                                adb.therapyActivityDao().insert(new TherapyActivityEntity(
+                                        "activity_social", "Escenarios Sociales",
+                                        "El robot presenta una situación social y el alumno elige cómo responder.", 2));
+                                adb.therapyActivityDao().insert(new TherapyActivityEntity(
+                                        "activity_sequence", "Secuencias Visuales",
+                                        "El alumno memoriza y reproduce una secuencia de elementos.", 2));
+                                adb.therapyActivityDao().insert(new TherapyActivityEntity(
+                                        "activity_calm", "Momento Calma",
+                                        "Actividad pasiva de regulación. El robot muestra una animación de respiración.", 1));
+                                adb.therapyActivityDao().insert(new TherapyActivityEntity(
+                                        "activity_turns", "Turnos Sociales",
+                                        "Actividad multi-robot. Los alumnos practican esperar y ceder el turno.", 3));
                                 // Terapeutas de prueba
                                 adb.therapistDao().insert(new TherapistEntity("rocio",  HashUtils.sha256("terapeuta1"), "Rocío Navarro"));
                                 adb.therapistDao().insert(new TherapistEntity("carlos", HashUtils.sha256("terapeuta2"), "Carlos Martínez"));

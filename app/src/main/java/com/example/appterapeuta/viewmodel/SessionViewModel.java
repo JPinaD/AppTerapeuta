@@ -27,6 +27,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,11 +43,12 @@ public class SessionViewModel extends AndroidViewModel {
 
     private final StudentProfileRepository profileRepository;
     private final SessionRecordRepository sessionRecordRepository;
+    private final ActivityResultRepository activityResultRepository;
     private List<StudentProfileEntity> cachedProfiles = new ArrayList<>();
     private long sessionStartTimestamp = 0;
 
     // Acumulador de resultados por robot
-    private final Map<String, int[]> resultAccumulator = new HashMap<>(); // robotId → [attempts, successes]
+    private final Map<String, int[]> resultAccumulator = new HashMap<>(); // robotId -> [attempts, successes]
 
     // Contenido de actividad seleccionado
     private List<String> activityItemIds = new ArrayList<>();
@@ -109,6 +111,11 @@ public class SessionViewModel extends AndroidViewModel {
             StudentProfileEntity profile = findProfile(cachedProfiles, profileId);
             String msg = buildSessionStartMessage(session, profile);
             robotViewModel.sendMessage(robotId, msg);
+        }
+
+        // Iniciar coordinacion de turnos si aplica
+        if (AppConstants.ACTIVITY_TURNS.equals(session.activityId)) {
+            startTurns(robotViewModel, session);
         }
     }
 
@@ -205,6 +212,7 @@ public class SessionViewModel extends AndroidViewModel {
         if (AppConstants.MSG_SESSION_READY.equals(event.type))      newState = RobotSessionState.READY;
         if (AppConstants.MSG_SESSION_ENDED.equals(event.type))      newState = RobotSessionState.ENDED;
         if (AppConstants.MSG_PICTOGRAM_SELECTED.equals(event.type)) newState = RobotSessionState.IN_ACTIVITY;
+        if (AppConstants.MSG_ACTIVITY_RESULT.equals(event.type))    newState = RobotSessionState.IN_ACTIVITY;
         if (AppConstants.MSG_SESSION_PAUSED.equals(event.type))     newState = RobotSessionState.PAUSED;
         if (AppConstants.MSG_SESSION_RESUMED.equals(event.type))    newState = RobotSessionState.IN_ACTIVITY;
         if (newState == null) return;
@@ -238,10 +246,8 @@ public class SessionViewModel extends AndroidViewModel {
         Session session = currentSession.getValue();
         if (session == null || turnOrder.isEmpty()) return;
 
-        // Avanzar al siguiente robot en el orden
         currentTurnIndex = (currentTurnIndex + 1) % turnOrder.size();
 
-        // Saltar robots desconectados (máximo una vuelta completa)
         int attempts = 0;
         while (attempts < turnOrder.size()) {
             String nextRobotId = turnOrder.get(currentTurnIndex);
@@ -255,7 +261,7 @@ public class SessionViewModel extends AndroidViewModel {
         android.util.Log.w("SessionViewModel", "Todos los robots desconectados en activity_turns");
     }
 
-    /** Activa activity_calm en todos los robots de la sesión activa. */
+    /** Activa activity_calm en todos los robots de la sesion activa. */
     public void activateCalm(RobotViewModel robotViewModel) {
         Session session = currentSession.getValue();
         if (session == null) return;
@@ -278,6 +284,52 @@ public class SessionViewModel extends AndroidViewModel {
     public String getStudentName(String profileId) {
         StudentProfileEntity p = findProfile(cachedProfiles, profileId);
         return p != null ? p.name : null;
+    }
+
+    public void sendFeedback(RobotViewModel robotViewModel, String robotId, String message) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("text", message);
+            JSONObject msg = new JSONObject();
+            msg.put("type", AppConstants.MSG_ROBOT_FEEDBACK);
+            msg.put("payload", payload.toString());
+            robotViewModel.sendMessage(robotId, msg.toString());
+        } catch (JSONException e) {
+            android.util.Log.e("SessionViewModel", "Error construyendo ROBOT_FEEDBACK", e);
+        }
+    }
+
+    // --- Turnos ---
+
+    private void startTurns(RobotViewModel robotViewModel, Session session) {
+        turnOrder = new ArrayList<>(session.participatingRobotIds);
+        Collections.shuffle(turnOrder);
+        currentTurnIndex = 0;
+        if (!turnOrder.isEmpty()) {
+            sendTurnSignals(robotViewModel, session.sessionId, turnOrder.get(0));
+        }
+    }
+
+    private void sendTurnSignals(RobotViewModel robotViewModel, String sessionId, String activeRobotId) {
+        for (String robotId : turnOrder) {
+            boolean active = robotId.equals(activeRobotId);
+            try {
+                JSONObject payload = new JSONObject();
+                payload.put("sessionId", sessionId);
+                payload.put("active", active);
+                JSONObject msg = new JSONObject();
+                msg.put("type", AppConstants.MSG_TURN_SIGNAL);
+                msg.put("payload", payload.toString());
+                robotViewModel.sendMessage(robotId, msg.toString());
+            } catch (JSONException e) {
+                android.util.Log.e("SessionViewModel", "Error construyendo TURN_SIGNAL", e);
+            }
+        }
+    }
+
+    private boolean isRobotConnected(String robotId) {
+        RobotSessionStatus status = safeStatuses().get(robotId);
+        return status != null && status.state != RobotSessionState.ENDED;
     }
 
     // --- privado ---
@@ -329,13 +381,21 @@ public class SessionViewModel extends AndroidViewModel {
 
     private String buildSessionStartMessage(Session session, StudentProfileEntity profile) {
         try {
-            JSONArray pics = new JSONArray();
-            for (String p : DEFAULT_PICTOGRAMS) pics.put(p);
-
             JSONObject payload = new JSONObject();
             payload.put("sessionId", session.sessionId);
             payload.put("activityId", session.activityId);
-            payload.put("pictograms", pics);
+
+            // Pictogramas (para activity_pictogram)
+            if (AppConstants.ACTIVITY_PICTOGRAM.equals(session.activityId)
+                    || AppConstants.ACTIVITY_PICTOGRAM_LEGACY.equals(session.activityId)) {
+                JSONArray pics = new JSONArray();
+                for (String p : DEFAULT_PICTOGRAMS) pics.put(p);
+                payload.put("pictograms", pics);
+            }
+
+            // activityContent segun tipo
+            JSONObject content = buildActivityContent(session.activityId);
+            if (content != null) payload.put("activityContent", content);
 
             if (profile != null) {
                 JSONObject profileJson = new JSONObject();
@@ -356,6 +416,44 @@ public class SessionViewModel extends AndroidViewModel {
         } catch (JSONException e) {
             android.util.Log.e("SessionViewModel", "Error construyendo SESSION_START", e);
             return "";
+        }
+    }
+
+    private JSONObject buildActivityContent(String activityId) throws JSONException {
+        switch (activityId) {
+            case AppConstants.ACTIVITY_EMOTION:
+            case AppConstants.ACTIVITY_TURNS: {
+                if (activityItemIds.isEmpty()) return null;
+                JSONObject content = new JSONObject();
+                JSONArray items = new JSONArray();
+                for (String id : activityItemIds) items.put(id);
+                content.put("items", items);
+                return content;
+            }
+            case AppConstants.ACTIVITY_SOCIAL: {
+                if (socialScenarios.isEmpty()) return null;
+                JSONObject content = new JSONObject();
+                JSONArray scenarios = new JSONArray();
+                for (SocialScenario s : socialScenarios) {
+                    JSONObject sObj = new JSONObject();
+                    sObj.put("id", s.id);
+                    sObj.put("description", s.description);
+                    sObj.put("optionA", s.optionA);
+                    sObj.put("optionB", s.optionB);
+                    sObj.put("outcomeA", s.outcomeA);
+                    sObj.put("outcomeB", s.outcomeB);
+                    scenarios.put(sObj);
+                }
+                content.put("scenarios", scenarios);
+                return content;
+            }
+            case AppConstants.ACTIVITY_SEQUENCE: {
+                JSONObject content = new JSONObject();
+                content.put("sequenceLength", sequenceLength);
+                return content;
+            }
+            default:
+                return null;
         }
     }
 
