@@ -421,7 +421,15 @@ public class SessionViewModel extends AndroidViewModel {
 
     private JSONObject buildActivityContent(String activityId) throws JSONException {
         switch (activityId) {
-            case AppConstants.ACTIVITY_EMOTION:
+            case AppConstants.ACTIVITY_EMOTION: {
+                if (activityItemIds.isEmpty()) return null;
+                JSONObject content = new JSONObject();
+                JSONArray items = new JSONArray();
+                for (String id : activityItemIds) items.put(id);
+                content.put("items", items);
+                content.put("steps", sequenceLength);
+                return content;
+            }
             case AppConstants.ACTIVITY_TURNS: {
                 if (activityItemIds.isEmpty()) return null;
                 JSONObject content = new JSONObject();
