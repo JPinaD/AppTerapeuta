@@ -9,11 +9,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.appterapeuta.R;
+import com.example.appterapeuta.SessionManager;
 import com.example.appterapeuta.ui.dashboard.MainDashboardActivity;
 import com.example.appterapeuta.viewmodel.LoginViewModel;
 import com.google.android.material.textfield.TextInputEditText;
 
 public class LoginActivity extends AppCompatActivity {
+
+    private String pendingUsername;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,12 +31,12 @@ public class LoginActivity extends AppCompatActivity {
 
         vm.getLoginResult().observe(this, result -> {
             if (result == LoginViewModel.LoginResult.SUCCESS) {
+                SessionManager.getInstance().login(pendingUsername, false);
                 startActivity(new Intent(this, MainDashboardActivity.class));
                 finish();
             } else if (result == LoginViewModel.LoginResult.SUCCESS_ROOT) {
-                Intent i = new Intent(this, MainDashboardActivity.class);
-                i.putExtra("is_root", true);
-                startActivity(i);
+                SessionManager.getInstance().login(pendingUsername, true);
+                startActivity(new Intent(this, MainDashboardActivity.class));
                 finish();
             } else {
                 tvError.setVisibility(View.VISIBLE);
@@ -49,6 +52,7 @@ public class LoginActivity extends AppCompatActivity {
                 tvError.setVisibility(View.VISIBLE);
                 return;
             }
+            pendingUsername = user;
             vm.login(user, pass);
         });
     }
