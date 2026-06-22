@@ -6,13 +6,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
  * Cliente TCP para conectarse a un robot descubierto por NSD.
- * Permite enviar mensajes y recibir respuestas (ej. PING/PONG).
+ * Incluye timeout de conexión, timeout de lectura (SO_TIMEOUT) y heartbeat.
  */
 public class TcpClient {
 
@@ -24,6 +25,8 @@ public class TcpClient {
     }
 
     private static final String TAG = "TcpClient";
+    private static final int CONNECT_TIMEOUT_MS = 5000;
+    private static final int READ_TIMEOUT_MS = 16000; // >3x heartbeat interval (5s)
 
     private final String host;
     private final int port;
@@ -34,7 +37,7 @@ public class TcpClient {
     private Socket socket;
     private PrintWriter out;
     private volatile boolean connected = false;
-    private volatile boolean errorFired = false;
+    private volatile boolean intentionalDisconnect = false;
 
     public TcpClient(String host, int port, ConnectionListener listener) {
         this.host = host;
@@ -45,7 +48,9 @@ public class TcpClient {
     public void connect() {
         readExecutor.execute(() -> {
             try {
-                socket = new Socket(host, port);
+                socket = new Socket();
+                socket.connect(new InetSocketAddress(host, port), CONNECT_TIMEOUT_MS);
+                socket.setSoTimeout(READ_TIMEOUT_MS);
                 socket.setKeepAlive(true);
                 out = new PrintWriter(socket.getOutputStream(), true);
                 connected = true;
@@ -55,15 +60,19 @@ public class TcpClient {
                         new InputStreamReader(socket.getInputStream()));
                 String line;
                 while ((line = in.readLine()) != null) {
-                    final String msg = line;
-                    listener.onMessage(msg);
+                    listener.onMessage(line);
                 }
-            } catch (IOException e) {
-                if (connected) { errorFired = true; listener.onError(e); }
-            } finally {
+                // readLine returned null = peer closed cleanly
                 connected = false;
-                if (!errorFired) listener.onDisconnected();
-                errorFired = false;
+                if (!intentionalDisconnect) listener.onDisconnected();
+            } catch (java.net.SocketTimeoutException e) {
+                // SO_TIMEOUT fired — no data received in READ_TIMEOUT_MS
+                connected = false;
+                if (!intentionalDisconnect) listener.onDisconnected();
+            } catch (IOException e) {
+                connected = false;
+                if (!intentionalDisconnect) listener.onError(e);
+            } finally {
                 close();
             }
         });
@@ -75,7 +84,12 @@ public class TcpClient {
         }
     }
 
+    public boolean isConnected() {
+        return connected;
+    }
+
     public void disconnect() {
+        intentionalDisconnect = true;
         connected = false;
         close();
         readExecutor.shutdownNow();

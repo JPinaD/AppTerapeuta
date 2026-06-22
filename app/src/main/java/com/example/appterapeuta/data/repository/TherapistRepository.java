@@ -17,7 +17,8 @@ public class TherapistRepository {
     public static final String ROOT_USERNAME = "root";
     private static final String ROOT_PASSWORD = "root1234";
 
-    private final AppDatabase db;
+    private final AppDatabase
+            db;
 
     public TherapistRepository(Context context) {
         db = AppDatabase.getInstance(context);

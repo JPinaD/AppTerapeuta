@@ -1,15 +1,25 @@
 package com.example.appterapeuta.network;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+
 import com.example.appterapeuta.data.model.ConnectionState;
 import com.example.appterapeuta.data.model.DiscoveredRobot;
 import com.example.appterapeuta.data.model.RobotConnection;
+import com.example.appterapeuta.util.AppConstants;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Gestiona conexiones TCP simultáneas a N robots, indexadas por robotId.
+ * Incluye heartbeat PING cada 5s para detectar conexiones muertas.
  */
 public class MultiRobotConnectionManager {
 
@@ -21,10 +31,19 @@ public class MultiRobotConnectionManager {
         void onMessage(String robotId, String message);
     }
 
+    private static final String TAG = "MultiRobotConnMgr";
+    private static final long RECONNECT_DELAY_MS = 3000;
+    private static final long PING_INTERVAL_MS = 5000;
+
     private final Map<String, RobotConnection> connections = new HashMap<>();
     private final Map<String, TcpClient> clients = new HashMap<>();
+    private final Map<String, DiscoveredRobot> robotInfos = new HashMap<>();
     private OnConnectionStateChangedListener stateListener;
     private OnMessageListener messageListener;
+
+    private final ScheduledExecutorService pingScheduler = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledFuture<?> pingTask;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     public void setListener(OnConnectionStateChangedListener listener) {
         this.stateListener = listener;
@@ -37,6 +56,22 @@ public class MultiRobotConnectionManager {
     public void connect(DiscoveredRobot robot) {
         String robotId = robot.robotId;
 
+        // Si ya estamos conectados o conectando a este robot, no hacer nada
+        RobotConnection existingConn = connections.get(robotId);
+        if (existingConn != null) {
+            if (existingConn.state == ConnectionState.CONNECTING) {
+                Log.d(TAG, "Robot ya conectando, ignorando: " + robotId);
+                return;
+            }
+            if (existingConn.state == ConnectionState.CONNECTED) {
+                TcpClient existingClient = clients.get(robotId);
+                if (existingClient != null && existingClient.isConnected()) {
+                    Log.d(TAG, "Robot ya conectado, ignorando: " + robotId);
+                    return;
+                }
+            }
+        }
+
         // Cancelar cliente anterior si existe
         TcpClient existing = clients.remove(robotId);
         if (existing != null) existing.disconnect();
@@ -45,43 +80,42 @@ public class MultiRobotConnectionManager {
         if (conn == null) {
             conn = new RobotConnection(robotId, robot.host, robot.port);
             connections.put(robotId, conn);
+        } else {
+            conn.host = robot.host;
+            conn.port = robot.port;
         }
+        robotInfos.put(robotId, robot);
 
         updateState(robotId, ConnectionState.CONNECTING);
 
         final RobotConnection finalConn = conn;
-        final TcpClient[] clientRef = new TcpClient[1];
         TcpClient client = new TcpClient(robot.host, robot.port, new TcpClient.ConnectionListener() {
-            @Override public void onConnected() {
+            @Override
+            public void onConnected() {
                 updateState(finalConn.robotId, ConnectionState.CONNECTED);
+                startPingIfNeeded();
             }
-            @Override public void onMessage(String message) {
+
+            @Override
+            public void onMessage(String message) {
+                // Filtrar PONGs silenciosamente
+                if (AppConstants.MSG_PONG.equals(message.trim())) return;
                 if (messageListener != null) messageListener.onMessage(finalConn.robotId, message);
             }
-            @Override public void onDisconnected() {
+
+            @Override
+            public void onDisconnected() {
                 updateState(finalConn.robotId, ConnectionState.DISCONNECTED);
-                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
-                    if (clients.get(robot.robotId) == clientRef[0] &&
-                            connections.containsKey(robot.robotId) &&
-                            connections.get(robot.robotId).state != ConnectionState.CONNECTED) {
-                        clients.remove(robot.robotId);
-                        connect(robot);
-                    }
-                }, 2000);
+                scheduleReconnect(finalConn.robotId);
             }
-            @Override public void onError(Exception e) {
-                updateState(finalConn.robotId, ConnectionState.ERROR);
-                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
-                    if (clients.get(robot.robotId) == clientRef[0] &&
-                            connections.containsKey(robot.robotId) &&
-                            connections.get(robot.robotId).state != ConnectionState.CONNECTED) {
-                        clients.remove(robot.robotId);
-                        connect(robot);
-                    }
-                }, 2000);
+
+            @Override
+            public void onError(Exception e) {
+                Log.w(TAG, "Error conexión " + finalConn.robotId + ": " + e.getMessage());
+                updateState(finalConn.robotId, ConnectionState.DISCONNECTED);
+                scheduleReconnect(finalConn.robotId);
             }
         });
-        clientRef[0] = client;
 
         clients.put(robotId, client);
         client.connect();
@@ -90,12 +124,12 @@ public class MultiRobotConnectionManager {
     public void send(String robotId, String message) {
         TcpClient client = clients.get(robotId);
         if (client == null) {
-            android.util.Log.w("MultiRobotConnMgr", "send(): robot no encontrado: " + robotId);
+            Log.w(TAG, "send(): robot no encontrado: " + robotId);
             return;
         }
         RobotConnection conn = connections.get(robotId);
         if (conn == null || conn.state != ConnectionState.CONNECTED) {
-            android.util.Log.w("MultiRobotConnMgr", "send(): robot no conectado: " + robotId);
+            Log.w(TAG, "send(): robot no conectado: " + robotId);
             return;
         }
         client.send(message);
@@ -104,8 +138,10 @@ public class MultiRobotConnectionManager {
     public void disconnect(String robotId) {
         TcpClient client = clients.remove(robotId);
         if (client != null) client.disconnect();
-        connections.remove(robotId); // eliminar para que la reconexión no se dispare
+        connections.remove(robotId);
+        robotInfos.remove(robotId);
         updateState(robotId, ConnectionState.DISCONNECTED);
+        stopPingIfEmpty();
     }
 
     public void disconnectAll() {
@@ -116,10 +152,54 @@ public class MultiRobotConnectionManager {
         for (String robotId : connections.keySet()) {
             updateState(robotId, ConnectionState.DISCONNECTED);
         }
+        connections.clear();
+        robotInfos.clear();
+        stopPing();
     }
 
     public Map<String, RobotConnection> getConnections() {
         return Collections.unmodifiableMap(connections);
+    }
+
+    private void scheduleReconnect(String robotId) {
+        mainHandler.postDelayed(() -> {
+            // Solo reconectar si el robot sigue registrado y no está conectado
+            if (!connections.containsKey(robotId)) return;
+            RobotConnection conn = connections.get(robotId);
+            if (conn != null && conn.state == ConnectionState.CONNECTED) return;
+
+            DiscoveredRobot info = robotInfos.get(robotId);
+            if (info != null) {
+                Log.d(TAG, "Reintentando conexión a " + robotId);
+                connect(info);
+            }
+        }, RECONNECT_DELAY_MS);
+    }
+
+    private void startPingIfNeeded() {
+        if (pingTask != null && !pingTask.isCancelled()) return;
+        pingTask = pingScheduler.scheduleAtFixedRate(this::sendPingToAll,
+                PING_INTERVAL_MS, PING_INTERVAL_MS, TimeUnit.MILLISECONDS);
+    }
+
+    private void stopPingIfEmpty() {
+        if (clients.isEmpty()) stopPing();
+    }
+
+    private void stopPing() {
+        if (pingTask != null) {
+            pingTask.cancel(false);
+            pingTask = null;
+        }
+    }
+
+    private void sendPingToAll() {
+        for (Map.Entry<String, TcpClient> entry : clients.entrySet()) {
+            TcpClient client = entry.getValue();
+            if (client != null && client.isConnected()) {
+                client.send(AppConstants.MSG_PING);
+            }
+        }
     }
 
     private void updateState(String robotId, ConnectionState state) {

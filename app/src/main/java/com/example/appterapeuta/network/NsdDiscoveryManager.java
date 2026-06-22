@@ -25,6 +25,7 @@ public class NsdDiscoveryManager {
     private NsdManager.DiscoveryListener discoveryListener;
     private OnRobotDiscoveredListener listener;
     private boolean resolving = false;
+    private boolean discoveryActive = false;
     private final Queue<NsdServiceInfo> pendingResolves = new ArrayDeque<>();
 
     public NsdDiscoveryManager(Context context) {
@@ -32,7 +33,12 @@ public class NsdDiscoveryManager {
     }
 
     public void startDiscovery(OnRobotDiscoveredListener listener) {
+        if (discoveryActive) {
+            this.listener = listener;
+            return;
+        }
         this.listener = listener;
+        discoveryActive = true;
 
         discoveryListener = new NsdManager.DiscoveryListener() {
             @Override public void onStartDiscoveryFailed(String serviceType, int errorCode) {
@@ -61,6 +67,7 @@ public class NsdDiscoveryManager {
     }
 
     public void stopDiscovery() {
+        discoveryActive = false;
         if (discoveryListener != null) {
             try {
                 nsdManager.stopServiceDiscovery(discoveryListener);

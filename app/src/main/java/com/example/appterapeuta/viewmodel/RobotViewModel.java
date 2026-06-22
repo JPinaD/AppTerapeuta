@@ -73,16 +73,18 @@ public class RobotViewModel extends AndroidViewModel {
             @Override
             public void onRobotFound(DiscoveredRobot robot) {
                 List<DiscoveredRobot> current = new ArrayList<>(safeList());
+                boolean found = false;
                 for (int i = 0; i < current.size(); i++) {
                     if (current.get(i).robotId.equals(robot.robotId)) {
                         current.set(i, robot);
-                        discoveredRobots.postValue(current);
-                        return;
+                        found = true;
+                        break;
                     }
                 }
-                current.add(robot);
+                if (!found) current.add(robot);
                 discoveredRobots.postValue(current);
-                connectionManager.connect(robot); // conectar automáticamente al descubrir
+                // connect() ignora si ya está conectado (no duplica conexiones)
+                connectionManager.connect(robot);
             }
 
             @Override
@@ -90,6 +92,8 @@ public class RobotViewModel extends AndroidViewModel {
                 List<DiscoveredRobot> current = new ArrayList<>(safeList());
                 current.removeIf(r -> r.serviceName.equals(serviceName));
                 discoveredRobots.postValue(current);
+                // No desconectamos aquí: NSD es poco fiable y puede disparar
+                // onServiceLost espuriamente. El heartbeat detectará la conexión muerta.
             }
         });
     }

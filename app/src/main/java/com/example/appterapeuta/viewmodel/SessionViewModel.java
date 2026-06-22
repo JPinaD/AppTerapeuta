@@ -450,6 +450,7 @@ public class SessionViewModel extends AndroidViewModel {
                     sObj.put("optionB", s.optionB);
                     sObj.put("outcomeA", s.outcomeA);
                     sObj.put("outcomeB", s.outcomeB);
+                    sObj.put("correctOption", s.correctOption);
                     scenarios.put(sObj);
                 }
                 content.put("scenarios", scenarios);

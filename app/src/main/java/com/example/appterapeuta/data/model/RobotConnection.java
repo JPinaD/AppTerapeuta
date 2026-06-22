@@ -2,8 +2,8 @@ package com.example.appterapeuta.data.model;
 
 public class RobotConnection {
     public final String robotId;
-    public final String host;
-    public final int port;
+    public String host;
+    public int port;
     public ConnectionState state;
 
     public RobotConnection(String robotId, String host, int port) {
