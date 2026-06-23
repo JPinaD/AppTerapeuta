@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -66,8 +67,10 @@ public class SessionSetupActivity extends AppCompatActivity {
     private List<String> selectedItemIds = new ArrayList<>();
     private List<SocialScenario> selectedScenarios = new ArrayList<>();
     private int selectedSequenceLength = 2;
+    private int selectedEmotionRounds = 3;
 
     private Spinner spinnerActivity;
+    private Spinner spinnerEmotionRounds;
     private TextView tvContentSummary;
     private Button btnSelectContent;
 
@@ -89,6 +92,31 @@ public class SessionSetupActivity extends AppCompatActivity {
         spinnerActivity  = findViewById(R.id.spinnerActivity);
         tvContentSummary = findViewById(R.id.tvContentSummary);
         btnSelectContent = findViewById(R.id.btnSelectContent);
+
+        // Spinner for emotion rounds (1-5)
+        spinnerEmotionRounds = new Spinner(this);
+        String[] roundLabels = {"1 ronda", "2 rondas", "3 rondas", "4 rondas", "5 rondas"};
+        ArrayAdapter<String> roundsAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, roundLabels);
+        roundsAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerEmotionRounds.setAdapter(roundsAdapter);
+        spinnerEmotionRounds.setSelection(2); // default 3 rounds
+        spinnerEmotionRounds.setVisibility(View.GONE);
+        spinnerEmotionRounds.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int pos, long id) {
+                selectedEmotionRounds = pos + 1;
+            }
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
+        // Insert spinner into layout after btnSelectContent
+        LinearLayout parentLayout = (LinearLayout) btnSelectContent.getParent();
+        int btnIndex = parentLayout.indexOfChild(btnSelectContent);
+        LinearLayout.LayoutParams spParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        spParams.bottomMargin = 8;
+        parentLayout.addView(spinnerEmotionRounds, btnIndex + 1, spParams);
 
         ArrayAdapter<String> actAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item, ACTIVITY_LABELS);
@@ -142,12 +170,18 @@ public class SessionSetupActivity extends AppCompatActivity {
         selectedItemIds.clear();
         selectedScenarios.clear();
         selectedSequenceLength = 2;
+        selectedEmotionRounds = 3;
 
         String activityId = ACTIVITY_IDS[position];
         boolean hasContent = activityHasContent(activityId);
         btnSelectContent.setVisibility(hasContent ? View.VISIBLE : View.GONE);
         tvContentSummary.setVisibility(hasContent ? View.VISIBLE : View.GONE);
         tvContentSummary.setText("");
+
+        // Show emotion rounds spinner only for emotion activity
+        boolean isEmotion = AppConstants.ACTIVITY_EMOTION.equals(activityId);
+        spinnerEmotionRounds.setVisibility(isEmotion ? View.VISIBLE : View.GONE);
+        if (isEmotion) spinnerEmotionRounds.setSelection(2);
 
         updateTurnsAvailability();
     }
@@ -285,8 +319,8 @@ public class SessionSetupActivity extends AppCompatActivity {
                 ? ACTIVITY_IDS[pos] : AppConstants.ACTIVITY_PICTOGRAM;
 
         // Validar contenido requerido
-        if (AppConstants.ACTIVITY_EMOTION.equals(activityId) && selectedItemIds.isEmpty()) {
-            Toast.makeText(this, "Selecciona al menos una emoción", Toast.LENGTH_SHORT).show();
+        if (AppConstants.ACTIVITY_EMOTION.equals(activityId) && selectedItemIds.size() < 4) {
+            Toast.makeText(this, "Selecciona al menos 4 emociones", Toast.LENGTH_SHORT).show();
             return;
         }
         if (AppConstants.ACTIVITY_SOCIAL.equals(activityId) && selectedScenarios.isEmpty()) {
@@ -305,8 +339,10 @@ public class SessionSetupActivity extends AppCompatActivity {
         }
 
         Map<String, String> robotToProfile = robotAdapter.getRobotToProfileId(connected);
+        int stepsOrLength = AppConstants.ACTIVITY_EMOTION.equals(activityId)
+                ? selectedEmotionRounds : selectedSequenceLength;
         sessionViewModel.prepareSession(connected, robotToProfile, activityId,
-                selectedItemIds, selectedScenarios, selectedSequenceLength);
+                selectedItemIds, selectedScenarios, stepsOrLength);
         sessionViewModel.startSession(robotViewModel, allProfiles);
 
         startActivity(new Intent(this, SessionLiveActivity.class));

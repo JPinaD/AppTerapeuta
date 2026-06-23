@@ -17,11 +17,14 @@ public class ActivityContentRepository {
     private static final List<ActivityContentItem> TURN_PICTOGRAMS = new ArrayList<>();
 
     static {
-        EMOTIONS.add(new ActivityContentItem("emotion_happy",   AppConstants.ACTIVITY_EMOTION, "Feliz",      "emotion_happy"));
-        EMOTIONS.add(new ActivityContentItem("emotion_sad",     AppConstants.ACTIVITY_EMOTION, "Triste",     "emotion_sad"));
-        EMOTIONS.add(new ActivityContentItem("emotion_angry",   AppConstants.ACTIVITY_EMOTION, "Enfadado",   "emotion_angry"));
-        EMOTIONS.add(new ActivityContentItem("emotion_surprised", AppConstants.ACTIVITY_EMOTION, "Sorprendido", "emotion_surprised"));
-        EMOTIONS.add(new ActivityContentItem("emotion_scared",  AppConstants.ACTIVITY_EMOTION, "Asustado",   "emotion_scared"));
+        EMOTIONS.add(new ActivityContentItem("emotion_happy",   AppConstants.ACTIVITY_EMOTION, "Felicidad",   "emotion_happy"));
+        EMOTIONS.add(new ActivityContentItem("emotion_sad",     AppConstants.ACTIVITY_EMOTION, "Tristeza",    "emotion_sad"));
+        EMOTIONS.add(new ActivityContentItem("emotion_angry",   AppConstants.ACTIVITY_EMOTION, "Enfado",      "emotion_angry"));
+        EMOTIONS.add(new ActivityContentItem("emotion_surprised", AppConstants.ACTIVITY_EMOTION, "Sorpresa",  "emotion_surprised"));
+        EMOTIONS.add(new ActivityContentItem("emotion_scared",  AppConstants.ACTIVITY_EMOTION, "Miedo",       "emotion_scared"));
+        EMOTIONS.add(new ActivityContentItem("emotion_disgusted", AppConstants.ACTIVITY_EMOTION, "Asco",      "emotion_disgusted"));
+        EMOTIONS.add(new ActivityContentItem("emotion_calm",    AppConstants.ACTIVITY_EMOTION, "Calma",       "emotion_calm"));
+        EMOTIONS.add(new ActivityContentItem("emotion_love",    AppConstants.ACTIVITY_EMOTION, "Amor",        "emotion_love"));
 
         // ── Batería de Escenarios Sociales (15+) ──────────────────────────────
         SOCIAL_SCENARIOS.add(new SocialScenario("social_greet",
