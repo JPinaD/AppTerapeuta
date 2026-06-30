@@ -18,6 +18,9 @@ public interface SessionRecordDao {
     @Query("SELECT * FROM session_records ORDER BY startTimestamp DESC")
     LiveData<List<SessionRecordEntity>> getAll();
 
+    @Query("SELECT * FROM session_records ORDER BY startTimestamp DESC")
+    List<SessionRecordEntity> getAllSync();
+
     @Query("SELECT * FROM session_records WHERE sessionId = :sessionId LIMIT 1")
     SessionRecordEntity getById(String sessionId);
 }
