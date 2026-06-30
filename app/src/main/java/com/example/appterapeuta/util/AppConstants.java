@@ -38,4 +38,7 @@ public class AppConstants {
 
     // Telemetría
     public static final String MSG_ROBOT_STATUS = "ROBOT_STATUS";
+
+    // Seguridad: detección de vuelco (MPU-6050)
+    public static final String MSG_TILT_ALERT = "TILT_ALERT";
 }

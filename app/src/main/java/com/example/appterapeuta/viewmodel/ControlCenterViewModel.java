@@ -59,13 +59,21 @@ public class ControlCenterViewModel extends AndroidViewModel {
             status.batteryPct = null;
             status.activityId = null;
             status.progressPct = null;
+            status.tilted = false;
         }
         liveStatuses.postValue(current);
     }
 
-    /** Procesa eventos entrantes — filtra ROBOT_STATUS y actualiza liveStatuses. */
+    /** Procesa eventos entrantes — filtra ROBOT_STATUS y TILT_ALERT y actualiza liveStatuses. */
     public void onActivityEvent(ActivityEvent event) {
         if (event == null) return;
+
+        // Manejar alerta de vuelco
+        if (AppConstants.MSG_TILT_ALERT.equals(event.type)) {
+            handleTiltAlert(event);
+            return;
+        }
+
         if (!AppConstants.MSG_ROBOT_STATUS.equals(event.type)) return;
         if (event.payload == null) return;
         try {
@@ -73,6 +81,8 @@ public class ControlCenterViewModel extends AndroidViewModel {
             Map<String, RobotLiveStatus> current = new HashMap<>(safeStatuses());
             RobotLiveStatus status = current.computeIfAbsent(event.robotId, RobotLiveStatus::new);
             status.online = true;
+            // Un ROBOT_STATUS normal indica que el robot está nivelado — limpiar alerta
+            status.tilted = false;
             if (p.has("batteryPct") && !p.isNull("batteryPct"))
                 status.batteryPct = p.getInt("batteryPct");
             if (p.has("activityId") && !p.isNull("activityId"))
@@ -91,6 +101,19 @@ public class ControlCenterViewModel extends AndroidViewModel {
         Map<String, RobotLiveStatus> current = new HashMap<>(safeStatuses());
         RobotLiveStatus status = current.computeIfAbsent(robotId, RobotLiveStatus::new);
         status.assignedStudentName = studentName;
+        liveStatuses.postValue(current);
+    }
+
+    /**
+     * Maneja la recepción de TILT_ALERT: marca el robot como inclinado.
+     * El flag se limpiará al recibir el siguiente ROBOT_STATUS normal.
+     */
+    private void handleTiltAlert(ActivityEvent event) {
+        String robotId = event.robotId;
+        Log.w(TAG, "TILT_ALERT recibido de robot: " + robotId);
+        Map<String, RobotLiveStatus> current = new HashMap<>(safeStatuses());
+        RobotLiveStatus status = current.computeIfAbsent(robotId, RobotLiveStatus::new);
+        status.tilted = true;
         liveStatuses.postValue(current);
     }
 

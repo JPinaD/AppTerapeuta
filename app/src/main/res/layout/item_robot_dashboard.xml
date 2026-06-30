@@ -40,6 +40,18 @@
         </LinearLayout>
 
         <TextView
+            android:id="@+id/tvTiltAlert"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="⚠️ Robot inclinado — motores detenidos"
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            android:textStyle="bold"
+            android:textColor="@color/hud_danger"
+            android:layout_marginTop="4dp"
+            android:visibility="gone" />
+
+        <TextView
             android:id="@+id/tvRobotDetails"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

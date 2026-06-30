@@ -62,8 +62,16 @@ class SessionStatusAdapter extends RecyclerView.Adapter<SessionStatusAdapter.VH>
             String act  = live.activityId  != null ? activityLabel(live.activityId) : "—";
             String prog = live.progressPct != null ? live.progressPct + "%" : "—";
             holder.tvTelemetry.setText("BAT: " + bat + "  |  ACT: " + act + "  |  PROG: " + prog);
+
+            // Indicador de vuelco
+            if (live.tilted) {
+                holder.tvTiltAlert.setVisibility(View.VISIBLE);
+            } else {
+                holder.tvTiltAlert.setVisibility(View.GONE);
+            }
         } else {
             holder.tvTelemetry.setText("");
+            holder.tvTiltAlert.setVisibility(View.GONE);
         }
 
         holder.btnFeedback.setOnClickListener(v -> {
@@ -87,7 +95,7 @@ class SessionStatusAdapter extends RecyclerView.Adapter<SessionStatusAdapter.VH>
     }
 
     private String activityLabel(String id) {
-        if (id == null) return "2014";
+        if (id == null) return "—";
         switch (id) {
             case "activity_pictogram": return "Pictogramas";
             case "activity_emotion":  return "Emociones";
@@ -99,14 +107,15 @@ class SessionStatusAdapter extends RecyclerView.Adapter<SessionStatusAdapter.VH>
         }
     }
 
-        static class VH extends RecyclerView.ViewHolder {
-        TextView tvName, tvState, tvTelemetry;
+    static class VH extends RecyclerView.ViewHolder {
+        TextView tvName, tvState, tvTelemetry, tvTiltAlert;
         Button btnFeedback;
         VH(@NonNull View v) {
             super(v);
             tvName      = v.findViewById(R.id.tvRobotName);
             tvState     = v.findViewById(R.id.tvSessionState);
             tvTelemetry = v.findViewById(R.id.tvTelemetry);
+            tvTiltAlert = v.findViewById(R.id.tvTiltAlert);
             btnFeedback = v.findViewById(R.id.btnFeedback);
         }
     }

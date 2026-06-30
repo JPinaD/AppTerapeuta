@@ -1,12 +1,18 @@
 package com.example.appterapeuta;
 
 import android.app.Application;
+import android.content.Context;
+import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.os.VibratorManager;
 
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStore;
 import androidx.lifecycle.ViewModelStoreOwner;
 
 import com.example.appterapeuta.data.model.RobotConnection;
+import com.example.appterapeuta.util.AppConstants;
 import com.example.appterapeuta.viewmodel.ControlCenterViewModel;
 import com.example.appterapeuta.viewmodel.RobotViewModel;
 import com.example.appterapeuta.viewmodel.SessionViewModel;
@@ -51,6 +57,12 @@ public class AppTerapeutaApp extends Application {
                 org.json.JSONObject obj = new org.json.JSONObject(message);
                 String type = obj.getString("type");
                 String payload = obj.optString("payload", null);
+
+                // Vibración corta al recibir TILT_ALERT para llamar la atención del terapeuta
+                if (AppConstants.MSG_TILT_ALERT.equals(type)) {
+                    vibrateAlert();
+                }
+
                 controlCenterViewModel.onActivityEvent(
                         new com.example.appterapeuta.data.model.ActivityEvent(robotId, type, payload));
             } catch (org.json.JSONException ignored) {}
@@ -69,4 +81,21 @@ public class AppTerapeutaApp extends Application {
     public RobotViewModel getRobotViewModel()                 { return robotViewModel; }
     public SessionViewModel getSessionViewModel()             { return sessionViewModel; }
     public ControlCenterViewModel getControlCenterViewModel() { return controlCenterViewModel; }
+
+    /** Vibración corta (300 ms) para alertar al terapeuta de un evento de seguridad. */
+    private void vibrateAlert() {
+        Vibrator vibrator;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            VibratorManager vm = (VibratorManager) getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+            vibrator = vm != null ? vm.getDefaultVibrator() : null;
+        } else {
+            vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        }
+        if (vibrator == null || !vibrator.hasVibrator()) return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            vibrator.vibrate(300);
+        }
+    }
 }

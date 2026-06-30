@@ -50,13 +50,20 @@ class RobotDashboardAdapter extends RecyclerView.Adapter<RobotDashboardAdapter.V
         RobotConfigEntity robot = robots.get(position);
         RobotLiveStatus status = statuses != null ? statuses.get(robot.robotId) : null;
         boolean online = status != null && status.online;
+        boolean tilted = status != null && status.tilted;
 
         h.tvName.setText(robot.name);
 
+        // Color de borde: rojo si inclinado, cian si online, gris si offline
         int bgColor = h.itemView.getContext().getColor(
                 online ? R.color.hud_card_bg : R.color.hud_offline_bg);
-        int borderColor = h.itemView.getContext().getColor(
-                online ? R.color.hud_online_border : R.color.hud_offline_border);
+        int borderColor;
+        if (tilted) {
+            borderColor = h.itemView.getContext().getColor(R.color.hud_danger);
+        } else {
+            borderColor = h.itemView.getContext().getColor(
+                    online ? R.color.hud_online_border : R.color.hud_offline_border);
+        }
         h.card.setCardBackgroundColor(bgColor);
         h.card.setStrokeColor(borderColor);
 
@@ -75,6 +82,13 @@ class RobotDashboardAdapter extends RecyclerView.Adapter<RobotDashboardAdapter.V
             h.tvDetails.setVisibility(View.GONE);
         }
 
+        // Indicador de vuelco
+        if (tilted) {
+            h.tvTiltAlert.setVisibility(View.VISIBLE);
+        } else {
+            h.tvTiltAlert.setVisibility(View.GONE);
+        }
+
         h.itemView.setOnLongClickListener(v -> {
             longClickListener.onLongClick(robot);
             return true;
@@ -86,13 +100,14 @@ class RobotDashboardAdapter extends RecyclerView.Adapter<RobotDashboardAdapter.V
 
     static class VH extends RecyclerView.ViewHolder {
         MaterialCardView card;
-        TextView tvName, tvOnline, tvDetails;
+        TextView tvName, tvOnline, tvDetails, tvTiltAlert;
         VH(@NonNull View v) {
             super(v);
-            card      = v.findViewById(R.id.cardRobot);
-            tvName    = v.findViewById(R.id.tvRobotName);
-            tvOnline  = v.findViewById(R.id.tvRobotOnline);
-            tvDetails = v.findViewById(R.id.tvRobotDetails);
+            card        = v.findViewById(R.id.cardRobot);
+            tvName      = v.findViewById(R.id.tvRobotName);
+            tvOnline    = v.findViewById(R.id.tvRobotOnline);
+            tvDetails   = v.findViewById(R.id.tvRobotDetails);
+            tvTiltAlert = v.findViewById(R.id.tvTiltAlert);
         }
     }
 }
