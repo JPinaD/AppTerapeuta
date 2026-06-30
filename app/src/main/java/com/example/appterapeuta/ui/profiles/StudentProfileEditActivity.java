@@ -38,6 +38,11 @@ public class StudentProfileEditActivity extends AppCompatActivity {
 
     private static final String[] SOUND_OPTIONS = {"Ninguno", "sound_birds", "sound_ocean", "sound_rain"};
 
+    private static final String[] CALM_TYPE_OPTIONS = {
+            "Respiración guiada", "Colores relajantes", "Música ambiental", "Contar hasta 10"};
+    private static final String[] CALM_TYPE_VALUES = {
+            "calm_breathing", "calm_colors", "calm_music", "calm_counting"};
+
     private static final String[] COMMUNICATION_OPTIONS = {
             "—", "No verbal", "Comunicación emergente",
             "Comunicación funcional con apoyo", "Comunicación verbal funcional", "Otros (especificar)"};
@@ -58,7 +63,7 @@ public class StudentProfileEditActivity extends AppCompatActivity {
     private TextInputEditText etName, etCommunicationOther, etSensoryOther,
             etAttentionOther, etMotorOther, etSocioemotionalOther, etClinicalNotes, etSafePlaceUri;
     private ChipGroup chipGroupColors;
-    private Spinner spinnerSound, spinnerCommunication, spinnerSensory,
+    private Spinner spinnerSound, spinnerCalmType, spinnerCommunication, spinnerSensory,
             spinnerAttention, spinnerMotor, spinnerSocioemotional;
     private StudentProfileViewModel viewModel;
     private String editingId = null;
@@ -72,6 +77,7 @@ public class StudentProfileEditActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(StudentProfileViewModel.class);
 
         setupSpinner(spinnerSound, SOUND_OPTIONS, null);
+        setupSpinner(spinnerCalmType, CALM_TYPE_OPTIONS, null);
         setupSpinner(spinnerCommunication, COMMUNICATION_OPTIONS, etCommunicationOther);
         setupSpinner(spinnerSensory, SENSORY_OPTIONS, etSensoryOther);
         setupSpinner(spinnerAttention, ATTENTION_OPTIONS, etAttentionOther);
@@ -109,6 +115,7 @@ public class StudentProfileEditActivity extends AppCompatActivity {
         etName                  = findViewById(R.id.etName);
         chipGroupColors         = findViewById(R.id.chipGroupColors);
         spinnerSound            = findViewById(R.id.spinnerSound);
+        spinnerCalmType         = findViewById(R.id.spinnerCalmType);
         spinnerCommunication    = findViewById(R.id.spinnerCommunication);
         etCommunicationOther    = findViewById(R.id.etCommunicationOther);
         spinnerSensory          = findViewById(R.id.spinnerSensory);
@@ -165,6 +172,7 @@ public class StudentProfileEditActivity extends AppCompatActivity {
         p.socioemotionalProfileOther = otherText(spinnerSocioemotional, SOCIOEMOTIONAL_OPTIONS, etSocioemotionalOther);
         p.clinicalNotes              = text(etClinicalNotes);
         p.safePlaceUri               = text(etSafePlaceUri);
+        p.calmType                   = CALM_TYPE_VALUES[spinnerCalmType.getSelectedItemPosition()];
 
         if (editingId != null) viewModel.update(p);
         else viewModel.insert(p);
@@ -215,6 +223,7 @@ public class StudentProfileEditActivity extends AppCompatActivity {
                 p.socioemotionalProfile, p.socioemotionalProfileOther);
         if (p.clinicalNotes != null) etClinicalNotes.setText(p.clinicalNotes);
         if (p.safePlaceUri != null) etSafePlaceUri.setText(p.safePlaceUri);
+        populateCalmType(p.calmType);
     }
 
     private void populateColors(String json) {
@@ -247,6 +256,15 @@ public class StudentProfileEditActivity extends AppCompatActivity {
                     otherField.setVisibility(View.VISIBLE);
                     otherField.setText(other);
                 }
+                return;
+            }
+        }
+    }
+    private void populateCalmType(String calmType) {
+        if (calmType == null) return;
+        for (int i = 0; i < CALM_TYPE_VALUES.length; i++) {
+            if (CALM_TYPE_VALUES[i].equals(calmType)) {
+                spinnerCalmType.setSelection(i);
                 return;
             }
         }

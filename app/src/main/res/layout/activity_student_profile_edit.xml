@@ -68,6 +68,19 @@
             android:layout_marginBottom="24dp" />
 
         <!-- Separador clínico -->
+
+        <!-- Tipo de calma preferido -->
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="TIPO DE CALMA" android:textSize="13sp" android:fontFamily="monospace"
+            android:textColor="@color/hud_text_secondary" android:layout_marginBottom="4dp" />
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Modalidad de calma que se mostrará al alumno cuando active el botón de autorregulación"
+            android:textSize="11sp" android:fontFamily="monospace"
+            android:textColor="@color/hud_text_secondary" android:layout_marginBottom="4dp" />
+        <Spinner android:id="@+id/spinnerCalmType"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp" />
+
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
             android:text="[ CARACTERÍSTICAS CLÍNICAS ]" android:textSize="14sp"
             android:fontFamily="monospace" android:textStyle="bold"

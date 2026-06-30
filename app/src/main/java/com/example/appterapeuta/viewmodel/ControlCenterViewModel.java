@@ -1,6 +1,7 @@
 package com.example.appterapeuta.viewmodel;
 
 import android.app.Application;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -47,7 +48,7 @@ public class ControlCenterViewModel extends AndroidViewModel {
         repository.delete(robot);
         Map<String, RobotLiveStatus> current = new HashMap<>(safeStatuses());
         current.remove(robot.robotId);
-        liveStatuses.postValue(current);
+        updateStatuses(current);
     }
 
     /** Llamar cuando cambia el estado de conexión TCP de un robot. */
@@ -61,7 +62,7 @@ public class ControlCenterViewModel extends AndroidViewModel {
             status.progressPct = null;
             status.tilted = false;
         }
-        liveStatuses.postValue(current);
+        updateStatuses(current);
     }
 
     /** Procesa eventos entrantes — filtra ROBOT_STATUS y TILT_ALERT y actualiza liveStatuses. */
@@ -91,7 +92,7 @@ public class ControlCenterViewModel extends AndroidViewModel {
             if (p.has("progressPct") && !p.isNull("progressPct"))
                 status.progressPct = p.getInt("progressPct");
             else status.progressPct = null;
-            liveStatuses.postValue(current);
+            updateStatuses(current);
         } catch (JSONException e) {
             Log.w(TAG, "Error parseando ROBOT_STATUS: " + event.payload);
         }
@@ -101,7 +102,7 @@ public class ControlCenterViewModel extends AndroidViewModel {
         Map<String, RobotLiveStatus> current = new HashMap<>(safeStatuses());
         RobotLiveStatus status = current.computeIfAbsent(robotId, RobotLiveStatus::new);
         status.assignedStudentName = studentName;
-        liveStatuses.postValue(current);
+        updateStatuses(current);
     }
 
     /**
@@ -114,7 +115,20 @@ public class ControlCenterViewModel extends AndroidViewModel {
         Map<String, RobotLiveStatus> current = new HashMap<>(safeStatuses());
         RobotLiveStatus status = current.computeIfAbsent(robotId, RobotLiveStatus::new);
         status.tilted = true;
-        liveStatuses.postValue(current);
+        updateStatuses(current);
+    }
+
+    /**
+     * Actualiza liveStatuses de forma thread-safe.
+     * Usa setValue si estamos en main thread (inmediato, sin pérdida),
+     * postValue si estamos en hilo de fondo (safety net).
+     */
+    private void updateStatuses(Map<String, RobotLiveStatus> newStatuses) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            liveStatuses.setValue(newStatuses);
+        } else {
+            liveStatuses.postValue(newStatuses);
+        }
     }
 
     private Map<String, RobotLiveStatus> safeStatuses() {

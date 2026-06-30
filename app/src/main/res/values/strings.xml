@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AppTerapeuta</string>
+    <string name="app_name">Emotiko</string>
     <string name="robot_battery">Batería: %1$d%%</string>
     <string name="back_arrow">&#8592;</string>
     <string name="back_content_desc">Volver atrás</string>

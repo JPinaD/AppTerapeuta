@@ -9,9 +9,9 @@ import com.example.appterapeuta.data.model.DiscoveredRobot;
 import com.example.appterapeuta.data.model.RobotConnection;
 import com.example.appterapeuta.util.AppConstants;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Gestiona conexiones TCP simultáneas a N robots, indexadas por robotId.
  * Incluye heartbeat PING cada 5s para detectar conexiones muertas.
+ * Thread-safe: usa ConcurrentHashMap para acceso desde NSD, network y main threads.
  */
 public class MultiRobotConnectionManager {
 
@@ -35,11 +36,12 @@ public class MultiRobotConnectionManager {
     private static final long RECONNECT_DELAY_MS = 3000;
     private static final long PING_INTERVAL_MS = 5000;
 
-    private final Map<String, RobotConnection> connections = new HashMap<>();
-    private final Map<String, TcpClient> clients = new HashMap<>();
-    private final Map<String, DiscoveredRobot> robotInfos = new HashMap<>();
-    private OnConnectionStateChangedListener stateListener;
-    private OnMessageListener messageListener;
+    // ConcurrentHashMap para acceso thread-safe desde NSD, reader y main threads
+    private final ConcurrentHashMap<String, RobotConnection> connections = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, TcpClient> clients = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, DiscoveredRobot> robotInfos = new ConcurrentHashMap<>();
+    private volatile OnConnectionStateChangedListener stateListener;
+    private volatile OnMessageListener messageListener;
 
     private final ScheduledExecutorService pingScheduler = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> pingTask;
@@ -158,7 +160,7 @@ public class MultiRobotConnectionManager {
     }
 
     public Map<String, RobotConnection> getConnections() {
-        return Collections.unmodifiableMap(connections);
+        return new HashMap<>(connections);
     }
 
     private void scheduleReconnect(String robotId) {

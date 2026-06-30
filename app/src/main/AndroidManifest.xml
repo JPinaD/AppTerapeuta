@@ -5,6 +5,8 @@
     <!-- MQTT sobre red local (hotspot) -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Vibración para alertas de seguridad (TILT_ALERT) -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".AppTerapeutaApp"

@@ -41,7 +41,7 @@ import java.util.concurrent.Executors;
         IncidentEntity.class,
         TherapistEntity.class
     },
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
@@ -139,6 +139,14 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+
+    // v6 -> v7: campo calmType en student_profiles (tipo de calma preferido del alumno)
+    static final Migration MIGRATION_6_7 = new Migration(6, 7) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE student_profiles ADD COLUMN calm_type TEXT DEFAULT 'calm_breathing'");
+        }
+    };
     public static AppDatabase getInstance(Context context) {
         if (instance == null) {
             synchronized (AppDatabase.class) {
@@ -148,7 +156,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             "appterapeuta.db"
                     )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                     .addCallback(new Callback() {
                         @Override
                         public void onCreate(@NonNull SupportSQLiteDatabase db) {

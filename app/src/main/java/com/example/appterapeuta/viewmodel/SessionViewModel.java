@@ -406,6 +406,11 @@ public class SessionViewModel extends AndroidViewModel {
                 if (profile.backgroundSoundResName != null) {
                     profileJson.put("backgroundSoundResName", profile.backgroundSoundResName);
                 }
+                if (profile.calmType != null) {
+                    profileJson.put("calmType", profile.calmType);
+                } else {
+                    profileJson.put("calmType", "calm_breathing");
+                }
                 payload.put("studentProfile", profileJson);
             }
 

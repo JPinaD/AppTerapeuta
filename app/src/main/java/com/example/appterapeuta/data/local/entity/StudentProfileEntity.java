@@ -1,6 +1,7 @@
 package com.example.appterapeuta.data.local.entity;
 
 import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -30,6 +31,11 @@ public class StudentProfileEntity {
     public String clinicalNotes;
     /** Referencia multimedia para el Lugar Seguro. Sin uso funcional en esta versión. */
     public String safePlaceUri;
+
+    // --- Configuración de calma ---
+    /** Tipo de calma preferido: calm_breathing, calm_colors, calm_music, calm_counting */
+    @ColumnInfo(name = "calm_type")
+    public String calmType;
 
     public StudentProfileEntity(@NonNull String id, String name,
                                 String excludedColors, String backgroundSoundResName) {

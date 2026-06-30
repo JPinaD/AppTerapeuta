@@ -53,19 +53,30 @@ public class AppTerapeutaApp extends Application {
 
         // Telemetría: listener directo para no perder eventos por sobreescritura de LiveData
         robotViewModel.setTelemetryListener((robotId, message) -> {
-            try {
-                org.json.JSONObject obj = new org.json.JSONObject(message);
-                String type = obj.getString("type");
-                String payload = obj.optString("payload", null);
+            // Despachar al hilo principal para evitar races con LiveData observers
+            // y asegurar que onActivityEvent() no se llama concurrentemente
+            android.os.Handler mainHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+            mainHandler.post(() -> {
+                try {
+                    org.json.JSONObject obj = new org.json.JSONObject(message);
+                    String type = obj.getString("type");
+                    String payload = obj.optString("payload", null);
 
-                // Vibración corta al recibir TILT_ALERT para llamar la atención del terapeuta
-                if (AppConstants.MSG_TILT_ALERT.equals(type)) {
-                    vibrateAlert();
+                    // Vibración corta al recibir TILT_ALERT para llamar la atención del terapeuta
+                    if (AppConstants.MSG_TILT_ALERT.equals(type)) {
+                        try {
+                            vibrateAlert();
+                        } catch (Exception vibErr) {
+                            android.util.Log.w("AppTerapeutaApp", "vibrateAlert failed: " + vibErr.getMessage());
+                        }
+                    }
+
+                    controlCenterViewModel.onActivityEvent(
+                            new com.example.appterapeuta.data.model.ActivityEvent(robotId, type, payload));
+                } catch (Exception e) {
+                    android.util.Log.w("AppTerapeutaApp", "Telemetry processing error: " + e.getMessage());
                 }
-
-                controlCenterViewModel.onActivityEvent(
-                        new com.example.appterapeuta.data.model.ActivityEvent(robotId, type, payload));
-            } catch (org.json.JSONException ignored) {}
+            });
         });
         robotViewModel.getRobotConnections().observeForever(connections -> {
             if (connections == null) return;

@@ -7,6 +7,7 @@ public class StudentProfile {
     public String name;
     public List<String> excludedColors;
     public String backgroundSoundResName;
+    public String calmType;
 
     public StudentProfile(String id, String name,
                           List<String> excludedColors, String backgroundSoundResName) {
@@ -14,5 +15,12 @@ public class StudentProfile {
         this.name = name;
         this.excludedColors = excludedColors;
         this.backgroundSoundResName = backgroundSoundResName;
+    }
+
+    public StudentProfile(String id, String name,
+                          List<String> excludedColors, String backgroundSoundResName,
+                          String calmType) {
+        this(id, name, excludedColors, backgroundSoundResName);
+        this.calmType = calmType;
     }
 }
