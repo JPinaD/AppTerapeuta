@@ -2,7 +2,6 @@ package com.example.appterapeuta.ui.history;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -10,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appterapeuta.R;
+import com.example.appterapeuta.util.ExportManager;
 import com.example.appterapeuta.viewmodel.SessionHistoryViewModel;
 
 public class SessionHistoryActivity extends AppCompatActivity {
@@ -32,5 +32,8 @@ public class SessionHistoryActivity extends AppCompatActivity {
         vm.sessions.observe(this, adapter::setSessions);
 
         findViewById(R.id.back_button).setOnClickListener(v -> finish());
+
+        ExportManager exportManager = new ExportManager(this);
+        findViewById(R.id.btnExportCsv).setOnClickListener(v -> exportManager.exportAllSessionsCsv());
     }
 }

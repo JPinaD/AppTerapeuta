@@ -14,6 +14,7 @@ import com.example.appterapeuta.data.local.entity.ActivityResultEntity;
 import com.example.appterapeuta.data.local.entity.AlumnResultEntity;
 import com.example.appterapeuta.data.local.entity.IncidentEntity;
 import com.example.appterapeuta.data.local.entity.SessionRecordEntity;
+import com.example.appterapeuta.util.ExportManager;
 import com.example.appterapeuta.viewmodel.SessionHistoryViewModel;
 
 import java.text.SimpleDateFormat;
@@ -27,6 +28,7 @@ public class SessionResultDetailActivity extends AppCompatActivity {
             new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
 
     private LayoutInflater inflater;
+    private String sessionId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +37,7 @@ public class SessionResultDetailActivity extends AppCompatActivity {
 
         inflater = LayoutInflater.from(this);
 
-        String sessionId = getIntent().getStringExtra("session_id");
+        sessionId = getIntent().getStringExtra("session_id");
         if (sessionId == null) { finish(); return; }
 
         SessionHistoryViewModel vm = new ViewModelProvider(this).get(SessionHistoryViewModel.class);
@@ -43,6 +45,10 @@ public class SessionResultDetailActivity extends AppCompatActivity {
         vm.loadDetail(sessionId);
 
         findViewById(R.id.back_button).setOnClickListener(v -> finish());
+
+        ExportManager exportManager = new ExportManager(this);
+        findViewById(R.id.btnExportPdf).setOnClickListener(v ->
+                exportManager.exportSessionPdf(sessionId));
     }
 
     private void bindDetail(SessionHistoryViewModel.SessionDetail detail) {
