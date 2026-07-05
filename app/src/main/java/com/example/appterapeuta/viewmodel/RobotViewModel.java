@@ -14,6 +14,7 @@ import com.example.appterapeuta.data.model.DiscoveredRobot;
 import com.example.appterapeuta.data.model.RobotConnection;
 import com.example.appterapeuta.network.MultiRobotConnectionManager;
 import com.example.appterapeuta.network.NsdDiscoveryManager;
+import com.example.appterapeuta.util.AppConstants;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,6 +31,14 @@ public class RobotViewModel extends AndroidViewModel {
     private final MutableLiveData<List<DiscoveredRobot>> discoveredRobots = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<Map<String, RobotConnection>> robotConnections = new MutableLiveData<>(new HashMap<>());
     private final MutableLiveData<ActivityEvent> activityEvents = new MutableLiveData<>();
+
+    /**
+     * Canal dedicado para eventos del comunicador (COMMUNICATOR_SEQUENCE y STUDENT_PICTOGRAM_RESPONSE).
+     * Se usa un canal separado porque activityEvents usa postValue() que es lossy: si un ROBOT_STATUS
+     * llega justo después del mensaje del alumno, postValue() sobreescribe el evento antes de que el
+     * observer lo reciba. Este canal garantiza que CommunicatorSenderActivity no pierda mensajes.
+     */
+    private final MutableLiveData<ActivityEvent> communicatorEvents = new MutableLiveData<>();
 
     // Listener adicional para telemetría (no pasa por LiveData para evitar pérdida de eventos)
     private volatile java.util.function.BiConsumer<String, String> telemetryListener;
@@ -52,6 +61,11 @@ public class RobotViewModel extends AndroidViewModel {
                 String payload = obj.optString("payload", null);
                 ActivityEvent event = new ActivityEvent(robotId, type, payload);
                 activityEvents.postValue(event);
+                // Canal dedicado para mensajes del comunicador (no lossy frente a ROBOT_STATUS)
+                if (AppConstants.MSG_COMMUNICATOR_SEQUENCE.equals(type)
+                        || AppConstants.MSG_STUDENT_PICTOGRAM_RESPONSE.equals(type)) {
+                    communicatorEvents.postValue(event);
+                }
                 // Notificar telemetría directamente sin pasar por LiveData
                 if (telemetryListener != null) telemetryListener.accept(robotId, message);
             } catch (JSONException e) {
@@ -67,6 +81,9 @@ public class RobotViewModel extends AndroidViewModel {
     public LiveData<List<DiscoveredRobot>> getDiscoveredRobots() { return discoveredRobots; }
     public LiveData<Map<String, RobotConnection>> getRobotConnections() { return robotConnections; }
     public LiveData<ActivityEvent> getActivityEvents() { return activityEvents; }
+
+    /** Canal dedicado para eventos del comunicador. No se pierde por postValue lossy. */
+    public LiveData<ActivityEvent> getCommunicatorEvents() { return communicatorEvents; }
 
     public void startDiscovery() {
         nsdDiscoveryManager.startDiscovery(new NsdDiscoveryManager.OnRobotDiscoveredListener() {

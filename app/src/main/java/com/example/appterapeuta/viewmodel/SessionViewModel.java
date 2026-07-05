@@ -162,6 +162,8 @@ public class SessionViewModel extends AndroidViewModel {
         if (AppConstants.MSG_SESSION_READY.equals(event.type))      newState = RobotSessionState.READY;
         if (AppConstants.MSG_SESSION_ENDED.equals(event.type))      newState = RobotSessionState.ENDED;
         if (AppConstants.MSG_PICTOGRAM_SELECTED.equals(event.type)) newState = RobotSessionState.IN_ACTIVITY;
+        if (AppConstants.MSG_COMMUNICATOR_SEQUENCE.equals(event.type)) newState = RobotSessionState.IN_ACTIVITY;
+        if (AppConstants.MSG_STUDENT_PICTOGRAM_RESPONSE.equals(event.type)) newState = RobotSessionState.IN_ACTIVITY;
         if (AppConstants.MSG_SESSION_PAUSED.equals(event.type))     newState = RobotSessionState.PAUSED;
         if (AppConstants.MSG_SESSION_RESUMED.equals(event.type))    newState = RobotSessionState.IN_ACTIVITY;
         if (newState == null) return;
@@ -256,6 +258,9 @@ public class SessionViewModel extends AndroidViewModel {
                 return buildEmotionContent();
             case "activity_sequence":
                 return buildSequenceContent();
+            case "activity_communicator":
+                // Communicator doesn't need activityContent — catalog is hardcoded in app
+                return null;
             default:
                 return null;
         }

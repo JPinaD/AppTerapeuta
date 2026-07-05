@@ -42,6 +42,19 @@
         android:layout_marginTop="12dp"
         android:layout_marginBottom="4dp" />
 
+    <!-- Botón comunicador: visible cuando la actividad es activity_communicator -->
+    <Button
+        android:id="@+id/btnCommunicator"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="&#128172; COMUNICADOR"
+        android:backgroundTint="#00BCD4"
+        android:textColor="#FFFFFF"
+        android:fontFamily="monospace"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp"
+        android:visibility="gone" />
+
     <!-- Controles de pausa: visibles solo cuando hay robots PAUSED -->
     <LinearLayout
         android:id="@+id/layoutPauseControls"

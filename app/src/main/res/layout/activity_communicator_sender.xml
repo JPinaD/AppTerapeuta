@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/hud_bg"
+    android:padding="12dp">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="COMUNICADOR"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:fontFamily="monospace"
+            android:textColor="@color/hud_accent_cyan" />
+
+        <Button
+            android:id="@+id/btnClose"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="CERRAR"
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            android:backgroundTint="#7C3AED"
+            android:textColor="#FFFFFF" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/hud_accent_cyan"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Received message from student (visible when message arrives) -->
+    <LinearLayout
+        android:id="@+id/layoutReceivedMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#1A00BCD4"
+        android:padding="8dp"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📩 Mensaje del alumno:"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/hud_accent_cyan"
+            android:layout_marginBottom="4dp" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/layoutStudentPictos"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="4dp" />
+        </HorizontalScrollView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/btnUnderstood"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="✓ ENTENDIDO"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:backgroundTint="#4CAF50"
+                android:textColor="#FFFFFF"
+                android:layout_marginEnd="4dp" />
+
+            <Button
+                android:id="@+id/btnNotUnderstood"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="✗ NO ENTENDIDO"
+                android:textSize="12sp"
+                android:fontFamily="monospace"
+                android:backgroundTint="#FF7043"
+                android:textColor="#FFFFFF"
+                android:layout_marginStart="4dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Student response feedback (visible when student responds YES/NO to our message) -->
+    <TextView
+        android:id="@+id/tvStudentResponse"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#1AFF7043"
+        android:padding="10dp"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:fontFamily="monospace"
+        android:textColor="#FF7043"
+        android:gravity="center"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
+    <!-- Composition bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="#1A4CAF50"
+        android:padding="6dp"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="4dp">
+
+        <HorizontalScrollView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/layoutComposedPictos"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:minHeight="50dp" />
+        </HorizontalScrollView>
+
+        <Button
+            android:id="@+id/btnSendToStudent"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="ENVIAR"
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            android:backgroundTint="#4CAF50"
+            android:textColor="#FFFFFF"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <!-- Category tabs -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:layout_marginBottom="4dp">
+
+        <LinearLayout
+            android:id="@+id/layoutCategories"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" />
+    </HorizontalScrollView>
+
+    <!-- Pictogram grid -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <GridLayout
+            android:id="@+id/gridPictograms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="4"
+            android:padding="4dp"
+            android:alignmentMode="alignMargins"
+            android:useDefaultMargins="true" />
+    </ScrollView>
+
+</LinearLayout>

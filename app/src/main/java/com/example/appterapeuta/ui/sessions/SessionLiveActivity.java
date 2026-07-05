@@ -15,7 +15,9 @@ import com.example.appterapeuta.R;
 import com.example.appterapeuta.data.local.entity.IncidentEntity;
 import com.example.appterapeuta.data.model.RobotSessionState;
 import com.example.appterapeuta.data.model.RobotSessionStatus;
+import com.example.appterapeuta.data.model.Session;
 import com.example.appterapeuta.data.repository.IncidentRepository;
+import com.example.appterapeuta.ui.communicator.CommunicatorSenderActivity;
 import com.example.appterapeuta.viewmodel.ControlCenterViewModel;
 import com.example.appterapeuta.viewmodel.RobotViewModel;
 import com.example.appterapeuta.viewmodel.SessionViewModel;
@@ -109,6 +111,24 @@ public class SessionLiveActivity extends AppCompatActivity
             btnEnd.setEnabled(false);
             sessionViewModel.endSession(robotViewModel);
             btnEnd.postDelayed(this::finish, 500);
+        });
+
+        // Communicator button: visible only when activity is activity_communicator
+        Button btnCommunicator = findViewById(R.id.btnCommunicator);
+        sessionViewModel.getCurrentSession().observe(this, session -> {
+            if (session != null && "activity_communicator".equals(session.activityId)) {
+                btnCommunicator.setVisibility(View.VISIBLE);
+            } else {
+                btnCommunicator.setVisibility(View.GONE);
+            }
+        });
+        btnCommunicator.setOnClickListener(v -> {
+            Session session = sessionViewModel.getCurrentSession().getValue();
+            if (session == null || session.participatingRobotIds.isEmpty()) return;
+            String robotId = session.participatingRobotIds.get(0);
+            Intent intent = new Intent(this, CommunicatorSenderActivity.class);
+            intent.putExtra(CommunicatorSenderActivity.EXTRA_ROBOT_ID, robotId);
+            startActivity(intent);
         });
     }
 

@@ -60,6 +60,9 @@
         <activity
             android:name=".ui.dashboard.MainDashboardActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.communicator.CommunicatorSenderActivity"
+            android:exported="false" />
 
         <activity
             android:name=".ui.splash.SplashActivity"

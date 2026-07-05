@@ -27,6 +27,10 @@ public interface StudentProfileDao {
     @Update
     void update(StudentProfileEntity profile);
 
+    /** Synchronous lookup by ID for background operations (export, etc.). */
+    @Query("SELECT * FROM student_profiles WHERE id = :id LIMIT 1")
+    StudentProfileEntity getById(String id);
+
     @Query("DELETE FROM student_profiles WHERE id = :id")
     void deleteById(String id);
 }

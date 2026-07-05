@@ -9,6 +9,8 @@ public class AppConstants {
 
     // Actividad pictograma v1
     public static final String MSG_ACTIVITY_START     = "ACTIVITY_START";
+    /** @deprecated Replaced by MSG_COMMUNICATOR_SEQUENCE */
+    @Deprecated
     public static final String MSG_PICTOGRAM_SELECTED = "PICTOGRAM_SELECTED";
     public static final String MSG_ROBOT_FEEDBACK     = "ROBOT_FEEDBACK";
 
@@ -26,4 +28,16 @@ public class AppConstants {
 
     // Telemetría
     public static final String MSG_ROBOT_STATUS = "ROBOT_STATUS";
+
+    // Resultados de actividad
+    public static final String MSG_ACTIVITY_RESULT = "ACTIVITY_RESULT";
+
+    // Comunicador bidireccional (TCP)
+    public static final String MSG_COMMUNICATOR_SEQUENCE       = "COMMUNICATOR_SEQUENCE";
+    public static final String MSG_COMMUNICATOR_RESPONSE       = "COMMUNICATOR_RESPONSE";
+    public static final String MSG_TERAPEUTA_PICTOGRAM_MESSAGE = "TERAPEUTA_PICTOGRAM_MESSAGE";
+    public static final String MSG_STUDENT_PICTOGRAM_RESPONSE  = "STUDENT_PICTOGRAM_RESPONSE";
+
+    // Seguridad: detección de vuelco
+    public static final String MSG_TILT_ALERT = "TILT_ALERT";
 }

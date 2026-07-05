@@ -12,6 +12,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.example.appterapeuta.data.local.dao.ActivityResultDao;
 import com.example.appterapeuta.data.local.dao.AlumnResultDao;
 import com.example.appterapeuta.data.local.dao.IncidentDao;
+import com.example.appterapeuta.data.local.dao.ItemResultDao;
 import com.example.appterapeuta.data.local.dao.RobotConfigDao;
 import com.example.appterapeuta.data.local.dao.SessionRecordDao;
 import com.example.appterapeuta.data.local.dao.StudentProfileDao;
@@ -20,6 +21,7 @@ import com.example.appterapeuta.data.local.dao.TherapyActivityDao;
 import com.example.appterapeuta.data.local.entity.ActivityResultEntity;
 import com.example.appterapeuta.data.local.entity.AlumnResultEntity;
 import com.example.appterapeuta.data.local.entity.IncidentEntity;
+import com.example.appterapeuta.data.local.entity.ItemResultEntity;
 import com.example.appterapeuta.data.local.entity.RobotConfigEntity;
 import com.example.appterapeuta.data.local.entity.SessionRecordEntity;
 import com.example.appterapeuta.data.local.entity.StudentProfileEntity;
@@ -40,9 +42,10 @@ import java.util.concurrent.Executors;
         ActivityResultEntity.class,
         AlumnResultEntity.class,
         IncidentEntity.class,
-        TherapistEntity.class
+        TherapistEntity.class,
+        ItemResultEntity.class
     },
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
@@ -56,6 +59,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract ActivityResultDao activityResultDao();
     public abstract AlumnResultDao alumnResultDao();
     public abstract IncidentDao incidentDao();
+    public abstract ItemResultDao itemResultDao();
     public abstract TherapistDao therapistDao();
 
     static final Migration MIGRATION_1_2 = new Migration(1, 2) {
@@ -124,6 +128,20 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    // v5 -> v6: item_results table for per-item breakdown (emotion grouping, etc.)
+    static final Migration MIGRATION_5_6 = new Migration(5, 6) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS item_results (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "sessionId TEXT, activityId TEXT, studentId TEXT, " +
+                    "itemId TEXT, correct INTEGER NOT NULL, timestamp INTEGER NOT NULL, " +
+                    "FOREIGN KEY(sessionId) REFERENCES session_records(sessionId) ON DELETE CASCADE)");
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_item_results_sessionId ON item_results(sessionId)");
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_item_results_studentId ON item_results(studentId)");
+        }
+    };
+
     public static AppDatabase getInstance(Context context) {
         if (instance == null) {
             synchronized (AppDatabase.class) {
@@ -133,7 +151,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             "appterapeuta.db"
                     )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                     .fallbackToDestructiveMigration()
                     .addCallback(new Callback() {
                         @Override
@@ -171,12 +189,13 @@ public abstract class AppDatabase extends RoomDatabase {
     }
 
     private static void insertDefaultActivities(AppDatabase db) {
-        // Remove activity_calm from catalogue — Momento Calma is only accessible via FAB
+        // Remove legacy activities from catalogue
         db.therapyActivityDao().deleteById("activity_calm");
+        db.therapyActivityDao().deleteById("activity_pictogram");
         TherapyActivityDao dao = db.therapyActivityDao();
         dao.insert(new TherapyActivityEntity(
-                "activity_pictogram", "Pictogramas",
-                "Comunicación funcional: el alumno selecciona pictogramas para expresar necesidades y emociones.", 1));
+                "activity_communicator", "Comunicador",
+                "Comunicación bidireccional con pictogramas: el alumno compone secuencias de pictogramas para expresar necesidades y emociones, y recibe mensajes del terapeuta.", 1));
         dao.insert(new TherapyActivityEntity(
                 "activity_emotion", "Reconocimiento Emocional",
                 "Identificación de emociones: el alumno reconoce emociones en caras y avanza por un camino de casillas.", 2));
