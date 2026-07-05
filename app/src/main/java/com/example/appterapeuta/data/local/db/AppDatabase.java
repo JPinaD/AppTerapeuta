@@ -27,6 +27,7 @@ import com.example.appterapeuta.data.local.entity.TherapistEntity;
 import com.example.appterapeuta.data.local.entity.TherapyActivityEntity;
 
 import com.example.appterapeuta.util.HashUtils;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 
@@ -133,23 +134,17 @@ public abstract class AppDatabase extends RoomDatabase {
                             "appterapeuta.db"
                     )
                     .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                    .fallbackToDestructiveMigration()
                     .addCallback(new Callback() {
                         @Override
-                        public void onCreate(@NonNull SupportSQLiteDatabase db) {
-                            super.onCreate(db);
+                        public void onOpen(@NonNull SupportSQLiteDatabase db) {
+                            super.onOpen(db);
+                            // Asegurar que todos los datos semilla existen siempre.
+                            // onOpen se llama tanto tras crear la BD como al abrirla,
+                            // por lo que no necesitamos un callback onCreate separado.
                             Executors.newSingleThreadExecutor().execute(() -> {
                                 AppDatabase adb = getInstance(context);
-                                // Actividad por defecto
-                                adb.therapyActivityDao().insert(new TherapyActivityEntity(
-                                        "pictogram_v1", "El robot quiere decir algo",
-                                        "El alumno elige un pictograma para comunicarse con el robot.", 1));
-                                // Terapeutas de prueba
-                                adb.therapistDao().insert(new TherapistEntity("rocio",  HashUtils.sha256("terapeuta1"), "Rocío Navarro"));
-                                adb.therapistDao().insert(new TherapistEntity("carlos", HashUtils.sha256("terapeuta2"), "Carlos Martínez"));
-                                adb.therapistDao().insert(new TherapistEntity("laura",  HashUtils.sha256("terapeuta3"), "Laura Sánchez"));
-                                adb.therapistDao().insert(new TherapistEntity("pedro",  HashUtils.sha256("terapeuta4"), "Pedro Romero"));
-                                // Alumnos de ejemplo
-                                insertSampleStudents(adb);
+                                insertAllSeedData(adb);
                             });
                         }
                     })
@@ -160,7 +155,66 @@ public abstract class AppDatabase extends RoomDatabase {
         return instance;
     }
 
-    private static void insertSampleStudents(AppDatabase db) {
+    /**
+     * Inserta todos los datos semilla: actividades, terapeutas y alumnos de ejemplo.
+     * Usa INSERT OR IGNORE para terapeutas (no sobreescribe si ya existen) y
+     * comprueba si la tabla de alumnos está vacía antes de insertar los de ejemplo
+     * (para no duplicar ni sobreescribir perfiles editados por el usuario).
+     */
+    private static void insertAllSeedData(AppDatabase adb) {
+        // Catálogo de actividades (INSERT OR REPLACE — siempre actualiza)
+        insertDefaultActivities(adb);
+        // Terapeutas precargados (INSERT OR IGNORE — no sobreescribe)
+        insertDefaultTherapists(adb);
+        // Alumnos de ejemplo (solo si la tabla está vacía)
+        insertSampleStudentsIfEmpty(adb);
+    }
+
+    private static void insertDefaultActivities(AppDatabase db) {
+        // Remove activity_calm from catalogue — Momento Calma is only accessible via FAB
+        db.therapyActivityDao().deleteById("activity_calm");
+        TherapyActivityDao dao = db.therapyActivityDao();
+        dao.insert(new TherapyActivityEntity(
+                "activity_pictogram", "Pictogramas",
+                "Comunicación funcional: el alumno selecciona pictogramas para expresar necesidades y emociones.", 1));
+        dao.insert(new TherapyActivityEntity(
+                "activity_emotion", "Reconocimiento Emocional",
+                "Identificación de emociones: el alumno reconoce emociones en caras y avanza por un camino de casillas.", 2));
+        dao.insert(new TherapyActivityEntity(
+                "activity_social", "Escenarios Sociales",
+                "Toma de decisiones sociales: el alumno elige la respuesta adecuada ante situaciones sociales.", 2));
+        dao.insert(new TherapyActivityEntity(
+                "activity_sequence", "Secuencias Visuales",
+                "Memoria secuencial: el alumno memoriza y reproduce secuencias de movimientos.", 3));
+        dao.insert(new TherapyActivityEntity(
+                "activity_turns", "Turnos Sociales",
+                "Habilidades de turno y cooperación: actividad multi-robot para practicar la espera y el respeto de turnos.", 3));
+    }
+
+    /**
+     * Inserta los 4 terapeutas precargados. Usa INSERT OR IGNORE (del DAO),
+     * por lo que no sobreescribe terapeutas existentes ni sus contraseñas modificadas.
+     */
+    private static void insertDefaultTherapists(AppDatabase db) {
+        TherapistDao dao = db.therapistDao();
+        dao.insert(new TherapistEntity("rocio",  HashUtils.sha256("terapeuta1"), "Rocío Navarro"));
+        dao.insert(new TherapistEntity("carlos", HashUtils.sha256("terapeuta2"), "Carlos Martínez"));
+        dao.insert(new TherapistEntity("laura",  HashUtils.sha256("terapeuta3"), "Laura Sánchez"));
+        dao.insert(new TherapistEntity("pedro",  HashUtils.sha256("terapeuta4"), "Pedro Romero"));
+    }
+
+    /**
+     * Inserta los 6 alumnos de ejemplo SOLO si la tabla student_profiles está vacía.
+     * Esto evita duplicar perfiles (ya que usan UUID aleatorio) y no sobreescribe
+     * perfiles que el terapeuta haya editado o creado.
+     */
+    private static void insertSampleStudentsIfEmpty(AppDatabase db) {
+        // Verificar si ya hay alumnos (query síncrona directa)
+        List<StudentProfileEntity> existing = db.studentProfileDao().getAllSync();
+        if (existing != null && !existing.isEmpty()) {
+            return; // Ya hay datos, no insertar
+        }
+
         StudentProfileEntity marcos = new StudentProfileEntity(UUID.randomUUID().toString(), "Marcos", null, "sound_birds");
         marcos.communicationLevel    = "Comunicación emergente";
         marcos.sensorySensitivity    = "Hipersensibilidad (evita estímulos)";

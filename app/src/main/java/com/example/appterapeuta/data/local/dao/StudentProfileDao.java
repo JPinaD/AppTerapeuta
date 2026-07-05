@@ -17,6 +17,10 @@ public interface StudentProfileDao {
     @Query("SELECT * FROM student_profiles ORDER BY name ASC")
     LiveData<List<StudentProfileEntity>> getAll();
 
+    /** Versión síncrona para uso en callbacks de Room (hilo de fondo). */
+    @Query("SELECT * FROM student_profiles ORDER BY name ASC")
+    List<StudentProfileEntity> getAllSync();
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(StudentProfileEntity profile);
 

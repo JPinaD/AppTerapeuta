@@ -10,11 +10,12 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.appterapeuta.R;
 import com.example.appterapeuta.ui.dashboard.MainDashboardActivity;
-import com.example.appterapeuta.ui.therapists.TherapistManagementActivity;
 import com.example.appterapeuta.viewmodel.LoginViewModel;
 import com.google.android.material.textfield.TextInputEditText;
 
 public class LoginActivity extends AppCompatActivity {
+
+    private boolean navigated = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,11 +29,15 @@ public class LoginActivity extends AppCompatActivity {
         LoginViewModel vm = new ViewModelProvider(this).get(LoginViewModel.class);
 
         vm.getLoginResult().observe(this, result -> {
+            if (navigated) return;
             if (result == LoginViewModel.LoginResult.SUCCESS) {
+                navigated = true;
                 startActivity(new Intent(this, MainDashboardActivity.class));
                 finish();
             } else if (result == LoginViewModel.LoginResult.SUCCESS_ROOT) {
-                Intent i = new Intent(this, TherapistManagementActivity.class);
+                navigated = true;
+                Intent i = new Intent(this, MainDashboardActivity.class);
+                i.putExtra("is_root", true);
                 startActivity(i);
                 finish();
             } else {

@@ -1,9 +1,12 @@
 package com.example.appterapeuta.ui.history;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -13,6 +16,7 @@ import com.example.appterapeuta.data.local.entity.ActivityResultEntity;
 import com.example.appterapeuta.data.local.entity.AlumnResultEntity;
 import com.example.appterapeuta.data.local.entity.IncidentEntity;
 import com.example.appterapeuta.data.local.entity.SessionRecordEntity;
+import com.example.appterapeuta.util.ExportManager;
 import com.example.appterapeuta.viewmodel.SessionHistoryViewModel;
 
 import java.text.SimpleDateFormat;
@@ -23,13 +27,14 @@ import java.util.Locale;
 public class SessionResultDetailActivity extends AppCompatActivity {
 
     private static final SimpleDateFormat SDF = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+    private String sessionId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_session_result_detail);
 
-        String sessionId = getIntent().getStringExtra("session_id");
+        sessionId = getIntent().getStringExtra("session_id");
         if (sessionId == null) { finish(); return; }
 
         SessionHistoryViewModel vm = new ViewModelProvider(this).get(SessionHistoryViewModel.class);
@@ -37,6 +42,37 @@ public class SessionResultDetailActivity extends AppCompatActivity {
         vm.loadDetail(sessionId);
 
         findViewById(R.id.back_button).setOnClickListener(v -> finish());
+
+        // PDF export button
+        Button btnExportPdf = findViewById(R.id.btnExportPdf);
+        btnExportPdf.setOnClickListener(v -> {
+            btnExportPdf.setEnabled(false);
+            btnExportPdf.setText("...");
+            ExportManager.exportPDF(this, sessionId, new ExportManager.ExportCallback() {
+                @Override
+                public void onSuccess(java.io.File file) {
+                    runOnUiThread(() -> {
+                        btnExportPdf.setEnabled(true);
+                        btnExportPdf.setText("PDF");
+                        Toast.makeText(SessionResultDetailActivity.this,
+                                "PDF exportado correctamente", Toast.LENGTH_SHORT).show();
+                        Intent shareIntent = ExportManager.createShareIntent(
+                                SessionResultDetailActivity.this, file, "application/pdf");
+                        startActivity(shareIntent);
+                    });
+                }
+
+                @Override
+                public void onError(String message) {
+                    runOnUiThread(() -> {
+                        btnExportPdf.setEnabled(true);
+                        btnExportPdf.setText("PDF");
+                        Toast.makeText(SessionResultDetailActivity.this,
+                                message, Toast.LENGTH_LONG).show();
+                    });
+                }
+            });
+        });
     }
 
     private void bindDetail(SessionHistoryViewModel.SessionDetail detail) {

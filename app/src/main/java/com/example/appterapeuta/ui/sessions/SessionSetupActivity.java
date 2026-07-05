@@ -18,9 +18,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.appterapeuta.AppTerapeutaApp;
 import com.example.appterapeuta.R;
 import com.example.appterapeuta.data.local.entity.StudentProfileEntity;
+import com.example.appterapeuta.data.local.entity.TherapyActivityEntity;
 import com.example.appterapeuta.data.model.ConnectionState;
 import com.example.appterapeuta.data.model.DiscoveredRobot;
 import com.example.appterapeuta.data.model.RobotConnection;
+import com.example.appterapeuta.viewmodel.ActivityCatalogViewModel;
 import com.example.appterapeuta.viewmodel.RobotViewModel;
 import com.example.appterapeuta.viewmodel.SessionViewModel;
 import com.example.appterapeuta.viewmodel.StudentProfileViewModel;
@@ -35,9 +37,11 @@ public class SessionSetupActivity extends AppCompatActivity {
     private RobotViewModel robotViewModel;
     private SessionViewModel sessionViewModel;
     private StudentProfileViewModel profileViewModel;
+    private ActivityCatalogViewModel activityCatalogViewModel;
 
     private SessionRobotAdapter robotAdapter;
     private List<StudentProfileEntity> allProfiles = new ArrayList<>();
+    private List<TherapyActivityEntity> allActivities = new ArrayList<>();
     private Map<String, RobotConnection> connections = new HashMap<>();
 
     @Override
@@ -48,18 +52,25 @@ public class SessionSetupActivity extends AppCompatActivity {
         robotViewModel   = ((AppTerapeutaApp) getApplication()).getRobotViewModel();
         sessionViewModel = ((AppTerapeutaApp) getApplication()).getSessionViewModel();
         profileViewModel = new ViewModelProvider(this).get(StudentProfileViewModel.class);
+        activityCatalogViewModel = new ViewModelProvider(this).get(ActivityCatalogViewModel.class);
 
         RecyclerView rvRobots = findViewById(R.id.rvRobots);
         rvRobots.setLayoutManager(new LinearLayoutManager(this));
         robotAdapter = new SessionRobotAdapter();
         rvRobots.setAdapter(robotAdapter);
 
-        // Spinner de actividad (solo pictogram_v1 por ahora)
+        // Spinner de actividad — cargado dinámicamente desde la BD
         Spinner spinnerActivity = findViewById(R.id.spinnerActivity);
-        ArrayAdapter<String> actAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, new String[]{"Pictogramas (v1)"});
-        actAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerActivity.setAdapter(actAdapter);
+        activityCatalogViewModel.activities.observe(this, activities -> {
+            allActivities.clear();
+            if (activities != null) allActivities.addAll(activities);
+            List<String> names = new ArrayList<>();
+            for (TherapyActivityEntity a : allActivities) names.add(a.name);
+            ArrayAdapter<String> actAdapter = new ArrayAdapter<>(this,
+                    android.R.layout.simple_spinner_item, names);
+            actAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerActivity.setAdapter(actAdapter);
+        });
 
         profileViewModel.profiles.observe(this, profiles -> {
             allProfiles.clear();
@@ -98,6 +109,21 @@ public class SessionSetupActivity extends AppCompatActivity {
             return;
         }
 
+        // Obtener actividad seleccionada
+        Spinner spinnerActivity = findViewById(R.id.spinnerActivity);
+        int selectedPos = spinnerActivity.getSelectedItemPosition();
+        if (selectedPos < 0 || selectedPos >= allActivities.size()) {
+            Toast.makeText(this, "Selecciona una actividad", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String activityId = allActivities.get(selectedPos).id;
+
+        // Verificar que la actividad de Turnos requiere al menos 2 robots
+        if ("activity_turns".equals(activityId) && selectedRobotIds.size() < 2) {
+            Toast.makeText(this, "Turnos Sociales requiere al menos 2 robots conectados", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         // Verificar que todos los seleccionados están conectados
         List<String> connected = new ArrayList<>();
         for (String id : selectedRobotIds) {
@@ -114,7 +140,7 @@ public class SessionSetupActivity extends AppCompatActivity {
         }
 
         Map<String, String> robotToProfile = robotAdapter.getRobotToProfileId(connected);
-        sessionViewModel.prepareSession(connected, robotToProfile, "pictogram_v1");
+        sessionViewModel.prepareSession(connected, robotToProfile, activityId);
         sessionViewModel.startSession(robotViewModel, allProfiles);
 
         startActivity(new Intent(this, SessionLiveActivity.class));

@@ -18,4 +18,7 @@ public interface TherapyActivityDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(TherapyActivityEntity activity);
+
+    @Query("DELETE FROM therapy_activities WHERE id = :activityId")
+    void deleteById(String activityId);
 }
