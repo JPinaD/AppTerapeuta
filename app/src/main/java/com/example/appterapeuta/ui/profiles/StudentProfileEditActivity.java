@@ -54,12 +54,15 @@ public class StudentProfileEditActivity extends AppCompatActivity {
             "—", "Alta reactividad emocional", "Dificultad en reconocimiento emocional",
             "Tendencia al aislamiento", "Conductas de búsqueda de interacción",
             "Perfil mixto", "Otros (especificar)"};
+    private static final String[] JOINT_ATTENTION_OPTIONS = {
+            "—", "Sin respuesta", "Respuesta inconsistente",
+            "Respuesta con apoyo", "Respuesta autónoma", "Otros (especificar)"};
 
     private TextInputEditText etName, etCommunicationOther, etSensoryOther,
-            etAttentionOther, etMotorOther, etSocioemotionalOther, etClinicalNotes, etSafePlaceUri;
+            etAttentionOther, etMotorOther, etSocioemotionalOther, etJointAttentionOther, etClinicalNotes, etSafePlaceUri;
     private ChipGroup chipGroupColors;
     private Spinner spinnerSound, spinnerCommunication, spinnerSensory,
-            spinnerAttention, spinnerMotor, spinnerSocioemotional;
+            spinnerAttention, spinnerMotor, spinnerSocioemotional, spinnerJointAttention;
     private StudentProfileViewModel viewModel;
     private String editingId = null;
 
@@ -78,6 +81,7 @@ public class StudentProfileEditActivity extends AppCompatActivity {
         setupSpinner(spinnerMotor, MOTOR_OPTIONS, etMotorOther);
         setupSpinner(spinnerSocioemotional, SOCIOEMOTIONAL_OPTIONS, etSocioemotionalOther);
 
+        setupSpinner(spinnerJointAttention, JOINT_ATTENTION_OPTIONS, etJointAttentionOther);
         for (String[] color : COLOR_OPTIONS) {
             Chip chip = new Chip(this);
             chip.setText(color[0]);
@@ -119,6 +123,8 @@ public class StudentProfileEditActivity extends AppCompatActivity {
         etMotorOther            = findViewById(R.id.etMotorOther);
         spinnerSocioemotional   = findViewById(R.id.spinnerSocioemotional);
         etSocioemotionalOther   = findViewById(R.id.etSocioemotionalOther);
+        spinnerJointAttention   = findViewById(R.id.spinnerJointAttention);
+        etJointAttentionOther   = findViewById(R.id.etJointAttentionOther);
         etClinicalNotes         = findViewById(R.id.etClinicalNotes);
         etSafePlaceUri          = findViewById(R.id.etSafePlaceUri);
     }
@@ -163,6 +169,8 @@ public class StudentProfileEditActivity extends AppCompatActivity {
         p.motorSkillsOther           = otherText(spinnerMotor, MOTOR_OPTIONS, etMotorOther);
         p.socioemotionalProfile      = spinnerValue(spinnerSocioemotional, SOCIOEMOTIONAL_OPTIONS);
         p.socioemotionalProfileOther = otherText(spinnerSocioemotional, SOCIOEMOTIONAL_OPTIONS, etSocioemotionalOther);
+        p.jointAttentionLevel        = spinnerValue(spinnerJointAttention, JOINT_ATTENTION_OPTIONS);
+        p.jointAttentionLevelOther   = otherText(spinnerJointAttention, JOINT_ATTENTION_OPTIONS, etJointAttentionOther);
         p.clinicalNotes              = text(etClinicalNotes);
         p.safePlaceUri               = text(etSafePlaceUri);
 
@@ -214,6 +222,8 @@ public class StudentProfileEditActivity extends AppCompatActivity {
         populateSpinnerWithOther(spinnerSocioemotional, SOCIOEMOTIONAL_OPTIONS, etSocioemotionalOther,
                 p.socioemotionalProfile, p.socioemotionalProfileOther);
         if (p.clinicalNotes != null) etClinicalNotes.setText(p.clinicalNotes);
+        populateSpinnerWithOther(spinnerJointAttention, JOINT_ATTENTION_OPTIONS, etJointAttentionOther,
+                p.jointAttentionLevel, p.jointAttentionLevelOther);
         if (p.safePlaceUri != null) etSafePlaceUri.setText(p.safePlaceUri);
     }
 

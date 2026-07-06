@@ -225,6 +225,9 @@ public class SessionViewModel extends AndroidViewModel {
                 if (profile.backgroundSoundResName != null) {
                     profileJson.put("backgroundSoundResName", profile.backgroundSoundResName);
                 }
+                if (profile.jointAttentionLevel != null) {
+                    profileJson.put("jointAttentionLevel", profile.jointAttentionLevel);
+                }
                 payload.put("studentProfile", profileJson);
             }
 
@@ -302,77 +305,77 @@ public class SessionViewModel extends AndroidViewModel {
         JSONArray scenarios = new JSONArray();
 
         scenarios.put(buildScenario("s1",
-                "Un compañero te saluda en el pasillo.",
-                "Le ignoro y sigo andando", "Le saludo de vuelta",
-                "Tu compañero se siente ignorado.", "¡Bien! Es agradable saludar.", "B"));
+                "Te saludan en el pasillo",
+                "Le ignoro", "Le saludo",
+                "Se siente ignorado", "¡Bien! Saludar es bonito", "B"));
         scenarios.put(buildScenario("s2",
-                "Quieres jugar con un juguete que tiene otro niño.",
-                "Se lo quito de las manos", "Le pregunto si puedo jugar",
-                "El otro niño se enfada y llora.", "¡Genial! Pedir las cosas está bien.", "B"));
+                "Quieres un juguete que tiene otro niño",
+                "Se lo quito", "Le pido que me lo deje",
+                "Se enfada y llora", "¡Genial! Pedir está bien", "B"));
         scenarios.put(buildScenario("s3",
-                "Tu amigo se ha caído y está llorando.",
-                "Le pregunto si está bien", "Me voy corriendo a jugar",
-                "¡Bien! Ayudar a los demás es importante.", "Tu amigo se queda solo y triste.", "A"));
+                "Tu amigo se cae y llora",
+                "Le pregunto si está bien", "Me voy a jugar",
+                "¡Bien! Ayudar es importante", "Se queda solo y triste", "A"));
         scenarios.put(buildScenario("s4",
-                "Estás en la fila y alguien se cuela delante de ti.",
-                "Le empujo para que se quite", "Le digo que la fila empieza atrás",
-                "El otro niño se enfada contigo.", "¡Bien! Hablar es mejor que empujar.", "B"));
+                "Alguien se cuela en la fila",
+                "Le empujo", "Le digo que la fila es atrás",
+                "Se enfada contigo", "¡Bien! Hablar es mejor", "B"));
         scenarios.put(buildScenario("s5",
-                "La profesora hace una pregunta en clase.",
-                "Grito la respuesta sin levantar la mano", "Levanto la mano y espero mi turno",
-                "Los demás se asustan del grito.", "¡Muy bien! Esperar el turno es importante.", "B"));
+                "La profesora pregunta algo en clase",
+                "Grito la respuesta", "Levanto la mano y espero",
+                "Los demás se asustan", "¡Muy bien! Esperar el turno", "B"));
         scenarios.put(buildScenario("s6",
-                "Un compañero te enseña su dibujo.",
-                "Le digo que es muy feo", "Le digo que me gusta",
-                "Tu compañero se pone triste.", "¡Bien! Decir cosas bonitas alegra a los demás.", "B"));
+                "Un compañero te enseña su dibujo",
+                "Le digo que es feo", "Le digo que me gusta",
+                "Se pone triste", "¡Bien! Decir cosas bonitas", "B"));
         scenarios.put(buildScenario("s7",
-                "Pierdes en un juego.",
-                "Tiro las piezas al suelo enfadado", "Digo: no pasa nada, buen juego",
-                "Los demás no quieren jugar contigo.", "¡Genial! Saber perder es muy valiente.", "B"));
+                "Pierdes en un juego",
+                "Tiro las piezas enfadado", "Digo: no pasa nada",
+                "No quieren jugar contigo", "¡Genial! Saber perder", "B"));
         scenarios.put(buildScenario("s8",
-                "Alguien te ofrece una galleta.",
-                "La cojo sin decir nada", "Digo: gracias, qué amable",
-                "La otra persona se siente ignorada.", "¡Bien! Dar las gracias es bonito.", "B"));
+                "Te ofrecen una galleta",
+                "La cojo sin decir nada", "Digo: gracias",
+                "Se siente ignorada", "¡Bien! Dar las gracias", "B"));
         scenarios.put(buildScenario("s9",
-                "Tu compañero está jugando solo y parece aburrido.",
-                "Le pregunto si quiere jugar conmigo", "Paso de largo sin hablarle",
-                "¡Bien! Incluir a los demás es genial.", "Tu compañero sigue solo y triste.", "A"));
+                "Un compañero juega solo y aburrido",
+                "Le invito a jugar", "Paso de largo",
+                "¡Bien! Incluir a los demás", "Sigue solo y triste", "A"));
         scenarios.put(buildScenario("s10",
-                "La profesora dice que es hora de recoger.",
-                "Sigo jugando como si nada", "Recojo mis cosas",
-                "La profesora tiene que repetírtelo.", "¡Muy bien! Seguir las normas ayuda a todos.", "B"));
+                "Es hora de recoger",
+                "Sigo jugando", "Recojo mis cosas",
+                "Te lo tienen que repetir", "¡Muy bien! Seguir las normas", "B"));
         scenarios.put(buildScenario("s11",
-                "Un niño nuevo llega a clase y no conoce a nadie.",
-                "Me acerco y me presento", "Le miro pero no le digo nada",
-                "¡Genial! Presentarse es muy amable.", "El niño nuevo se siente solo.", "A"));
+                "Un niño nuevo llega a clase",
+                "Me presento", "No le digo nada",
+                "¡Genial! Presentarse es amable", "Se siente solo", "A"));
         scenarios.put(buildScenario("s12",
-                "Estás hablando y alguien te interrumpe.",
-                "Espero a que termine y sigo hablando", "Le grito que se calle",
-                "¡Bien! Tener paciencia es importante.", "La otra persona se asusta.", "A"));
+                "Alguien te interrumpe mientras hablas",
+                "Espero a que termine", "Le grito que se calle",
+                "¡Bien! Tener paciencia", "Se asusta", "A"));
         scenarios.put(buildScenario("s13",
-                "Quieres ir al baño durante la clase.",
-                "Me levanto y me voy sin decir nada", "Levanto la mano y pido permiso",
-                "La profesora no sabe dónde estás.", "¡Bien! Pedir permiso es lo correcto.", "B"));
+                "Necesitas ir al baño en clase",
+                "Me voy sin decir nada", "Levanto la mano",
+                "No saben dónde estás", "¡Bien! Pedir permiso", "B"));
         scenarios.put(buildScenario("s14",
-                "Tu compañero te pide prestado un lápiz.",
-                "Le digo que no sin motivo", "Se lo presto con cuidado",
-                "Tu compañero se siente rechazado.", "¡Genial! Compartir es muy bonito.", "B"));
+                "Te piden un lápiz prestado",
+                "Digo que no", "Se lo presto",
+                "Se siente rechazado", "¡Genial! Compartir es bonito", "B"));
         scenarios.put(buildScenario("s15",
-                "Has hecho algo mal sin querer y la profesora te lo dice.",
-                "Digo: lo siento, no lo haré más", "Me enfado y digo que no es culpa mía",
-                "¡Bien! Pedir disculpas es de valientes.", "La profesora se pone triste.", "A"));
+                "Haces algo mal sin querer",
+                "Digo: lo siento", "Digo: no es culpa mía",
+                "¡Bien! Pedir disculpas", "La profesora se entristece", "A"));
         scenarios.put(buildScenario("s16",
-                "Estás en el patio y ves que dos niños se pelean.",
-                "Voy a avisar a un profesor", "Me quedo mirando sin hacer nada",
-                "¡Bien! Avisar a un adulto es lo correcto.", "La pelea continúa y alguien se puede hacer daño.", "A"));
+                "Ves a dos niños peleándose",
+                "Aviso a un profesor", "Me quedo mirando",
+                "¡Bien! Avisar a un adulto", "La pelea sigue", "A"));
         scenarios.put(buildScenario("s17",
-                "Un amigo te cuenta un secreto.",
-                "Se lo cuento a todos", "Lo guardo y no se lo digo a nadie",
-                "Tu amigo se enfada y ya no confía en ti.", "¡Genial! Guardar secretos es ser buen amigo.", "B"));
+                "Un amigo te cuenta un secreto",
+                "Se lo cuento a todos", "Lo guardo para mí",
+                "Ya no confía en ti", "¡Genial! Guardar secretos", "B"));
         scenarios.put(buildScenario("s18",
-                "Es tu cumpleaños y recibes un regalo que no te gusta mucho.",
-                "Digo: gracias, qué bonito", "Digo: esto no me gusta, quiero otro",
-                "¡Bien! Agradecer los regalos es educado.", "La persona que te lo dio se pone triste.", "A"));
+                "Recibes un regalo que no te gusta",
+                "Digo: gracias, qué bonito", "Digo: no me gusta",
+                "¡Bien! Agradecer es educado", "Se pone triste", "A"));
 
         content.put("scenarios", scenarios);
         return content;

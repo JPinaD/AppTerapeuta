@@ -27,6 +27,8 @@ public class StudentProfileEntity {
     public String motorSkillsOther;
     public String socioemotionalProfile;
     public String socioemotionalProfileOther;
+    public String jointAttentionLevel;
+    public String jointAttentionLevelOther;
     public String clinicalNotes;
     /** Referencia multimedia para el Lugar Seguro. Sin uso funcional en esta versión. */
     public String safePlaceUri;

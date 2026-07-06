@@ -45,7 +45,7 @@ import java.util.concurrent.Executors;
         TherapistEntity.class,
         ItemResultEntity.class
     },
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
@@ -142,6 +142,15 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    // v6 -> v7: joint attention level in student_profiles
+    static final Migration MIGRATION_6_7 = new Migration(6, 7) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE student_profiles ADD COLUMN jointAttentionLevel TEXT");
+            db.execSQL("ALTER TABLE student_profiles ADD COLUMN jointAttentionLevelOther TEXT");
+        }
+    };
+
     public static AppDatabase getInstance(Context context) {
         if (instance == null) {
             synchronized (AppDatabase.class) {
@@ -151,7 +160,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             "appterapeuta.db"
                     )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                     .fallbackToDestructiveMigration()
                     .addCallback(new Callback() {
                         @Override
@@ -240,6 +249,7 @@ public abstract class AppDatabase extends RoomDatabase {
         marcos.attentionLevel        = "Atención muy reducida (< 5 min)";
         marcos.motorSkills           = "Dificultades en motricidad fina";
         marcos.socioemotionalProfile = "Alta reactividad emocional";
+        marcos.jointAttentionLevel   = "Sin respuesta";
         db.studentProfileDao().insert(marcos);
 
         StudentProfileEntity sofia = new StudentProfileEntity(UUID.randomUUID().toString(), "Sofía", null, "sound_ocean");
@@ -248,6 +258,7 @@ public abstract class AppDatabase extends RoomDatabase {
         sofia.attentionLevel        = "Atención reducida (5-10 min)";
         sofia.motorSkills           = "Sin dificultades aparentes";
         sofia.socioemotionalProfile = "Dificultad en reconocimiento emocional";
+        sofia.jointAttentionLevel    = "Respuesta con apoyo";
         db.studentProfileDao().insert(sofia);
 
         StudentProfileEntity daniel = new StudentProfileEntity(UUID.randomUUID().toString(), "Daniel", null, null);
@@ -256,6 +267,7 @@ public abstract class AppDatabase extends RoomDatabase {
         daniel.attentionLevel        = "Atención muy reducida (< 5 min)";
         daniel.motorSkills           = "Dificultades en ambas";
         daniel.socioemotionalProfile = "Tendencia al aislamiento";
+        daniel.jointAttentionLevel   = "Sin respuesta";
         db.studentProfileDao().insert(daniel);
 
         StudentProfileEntity lucia = new StudentProfileEntity(UUID.randomUUID().toString(), "Lucía", null, "sound_rain");
@@ -264,6 +276,7 @@ public abstract class AppDatabase extends RoomDatabase {
         lucia.attentionLevel        = "Atención sostenida (> 20 min)";
         lucia.motorSkills           = "Sin dificultades aparentes";
         lucia.socioemotionalProfile = "Conductas de búsqueda de interacción";
+        lucia.jointAttentionLevel    = "Respuesta autónoma";
         db.studentProfileDao().insert(lucia);
 
         StudentProfileEntity adrian = new StudentProfileEntity(UUID.randomUUID().toString(), "Adrián", null, null);
@@ -272,6 +285,7 @@ public abstract class AppDatabase extends RoomDatabase {
         adrian.attentionLevel        = "Atención moderada (10-20 min)";
         adrian.motorSkills           = "Dificultades en motricidad gruesa";
         adrian.socioemotionalProfile = "Perfil mixto";
+        adrian.jointAttentionLevel   = "Respuesta inconsistente";
         db.studentProfileDao().insert(adrian);
 
         StudentProfileEntity elena = new StudentProfileEntity(UUID.randomUUID().toString(), "Elena", null, "sound_birds");
@@ -280,6 +294,7 @@ public abstract class AppDatabase extends RoomDatabase {
         elena.attentionLevel        = "Atención reducida (5-10 min)";
         elena.motorSkills           = "Dificultades en motricidad fina";
         elena.socioemotionalProfile = "Alta reactividad emocional";
+        elena.jointAttentionLevel    = "Respuesta con apoyo";
         db.studentProfileDao().insert(elena);
     }
 }

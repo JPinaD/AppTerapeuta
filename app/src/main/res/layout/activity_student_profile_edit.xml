@@ -143,6 +143,21 @@
             android:fontFamily="monospace" android:visibility="gone"
             android:layout_marginBottom="16dp" />
 
+        <!-- Nivel de atención conjunta -->
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Atención conjunta" android:textSize="13sp" android:fontFamily="monospace"
+            android:textColor="@color/hud_text_secondary" android:layout_marginBottom="4dp" />
+        <Spinner android:id="@+id/spinnerJointAttention"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp" />
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etJointAttentionOther"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:hint="Especificar..." android:textColor="@color/hud_text_primary"
+            android:fontFamily="monospace" android:visibility="gone"
+            android:layout_marginBottom="16dp" />
+
+
         <!-- Observaciones clínicas -->
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
             android:text="Observaciones clínicas" android:textSize="13sp" android:fontFamily="monospace"
