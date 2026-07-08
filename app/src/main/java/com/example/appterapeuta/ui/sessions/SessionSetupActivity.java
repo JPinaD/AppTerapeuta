@@ -118,9 +118,9 @@ public class SessionSetupActivity extends AppCompatActivity {
         }
         String activityId = allActivities.get(selectedPos).id;
 
-        // Verificar que la actividad de Turnos requiere al menos 2 robots
+        // Turnos Sociales requiere 2+ robots (modo cooperativo obligatorio)
         if ("activity_turns".equals(activityId) && selectedRobotIds.size() < 2) {
-            Toast.makeText(this, "Turnos Sociales requiere al menos 2 robots conectados", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Turnos Sociales requiere al menos 2 robots conectados", Toast.LENGTH_SHORT).show();
             return;
         }
 

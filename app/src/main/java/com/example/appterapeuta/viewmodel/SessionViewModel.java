@@ -1,6 +1,9 @@
 package com.example.appterapeuta.viewmodel;
 
 import android.app.Application;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -23,6 +26,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +34,15 @@ import java.util.UUID;
 
 public class SessionViewModel extends AndroidViewModel {
 
+    private static final String TAG = "SessionViewModel";
     private static final String[] DEFAULT_PICTOGRAMS = {"pic_agua", "pic_jugar", "pic_comer", "pic_ayuda"};
+
+    /** Pool de 12 emociones ARASAAC reutilizado para Turnos Sociales cooperativos. */
+    private static final String[] EMOTION_POOL = {
+            "emotion_happy", "emotion_sad", "emotion_angry", "emotion_surprised",
+            "emotion_scared", "emotion_disgusted", "emotion_calm", "emotion_shy",
+            "emotion_bored", "emotion_tired", "emotion_excited", "emotion_terror"
+    };
 
     private final MutableLiveData<Session> currentSession = new MutableLiveData<>();
     private final MutableLiveData<Map<String, RobotSessionStatus>> robotStatuses =
@@ -40,6 +52,20 @@ public class SessionViewModel extends AndroidViewModel {
     private final SessionRecordRepository sessionRecordRepository;
     private List<StudentProfileEntity> cachedProfiles = new ArrayList<>();
     private long sessionStartTimestamp = 0;
+
+    // --- Turns coordination state ---
+    private RobotViewModel turnsRobotViewModel;
+    private final Handler turnsHandler = new Handler(Looper.getMainLooper());
+    private int turnsCurrentRound = 0;
+    private int turnsTotalRounds = 5;
+    private List<TurnsRoundData> turnsRounds;
+    /** Tracks which robots have responded in the current round: robotId -> selectedOption */
+    private final Map<String, String> turnsResponses = new HashMap<>();
+    /** Delay before sending the next round after correct result (ms). */
+    private static final long TURNS_NEXT_ROUND_DELAY_CORRECT_MS = 3500;
+    /** Delay before sending the next round after wrong result (ms).
+     *  Must be > WRONG_ADVANCE_DELAY_MS in TurnsViewModel (4000ms) to avoid race condition. */
+    private static final long TURNS_NEXT_ROUND_DELAY_WRONG_MS = 5000;
 
     public SessionViewModel(@NonNull Application application) {
         super(application);
@@ -79,6 +105,11 @@ public class SessionViewModel extends AndroidViewModel {
             String msg = buildSessionStartMessage(session, profile);
             robotViewModel.sendMessage(robotId, msg);
         }
+
+        // If this is a Turns activity with 2+ robots, initialize turn coordination
+        if ("activity_turns".equals(session.activityId) && session.participatingRobotIds.size() >= 2) {
+            initTurnsCoordination(robotViewModel, session);
+        }
     }
 
     public void endSession(RobotViewModel robotViewModel) {
@@ -98,8 +129,12 @@ public class SessionViewModel extends AndroidViewModel {
                 robotViewModel.sendMessage(robotId, msgStr);
             }
         } catch (JSONException e) {
-            android.util.Log.e("SessionViewModel", "Error construyendo SESSION_END", e);
+            Log.e(TAG, "Error construyendo SESSION_END", e);
         }
+
+        // Clean up turns state
+        turnsHandler.removeCallbacksAndMessages(null);
+        turnsRobotViewModel = null;
 
         persistSessionRecord(session);
     }
@@ -119,7 +154,7 @@ public class SessionViewModel extends AndroidViewModel {
             String msgStr = msg.toString();
             for (String robotId : robotIds) robotViewModel.sendMessage(robotId, msgStr);
         } catch (JSONException e) {
-            android.util.Log.e("SessionViewModel", "Error construyendo SESSION_PAUSE", e);
+            Log.e(TAG, "Error construyendo SESSION_PAUSE", e);
         }
         Map<String, RobotSessionStatus> current = new HashMap<>(safeStatuses());
         for (String robotId : robotIds) {
@@ -144,7 +179,7 @@ public class SessionViewModel extends AndroidViewModel {
             String msgStr = msg.toString();
             for (String robotId : robotIds) robotViewModel.sendMessage(robotId, msgStr);
         } catch (JSONException e) {
-            android.util.Log.e("SessionViewModel", "Error construyendo SESSION_RESUME", e);
+            Log.e(TAG, "Error construyendo SESSION_RESUME", e);
         }
     }
 
@@ -158,6 +193,20 @@ public class SessionViewModel extends AndroidViewModel {
 
     public void handleIncomingEvent(ActivityEvent event) {
         if (event == null) return;
+
+        // Handle TURN_DONE for cooperative turns coordination
+        if (AppConstants.MSG_TURN_DONE.equals(event.type)) {
+            // Update status
+            Map<String, RobotSessionStatus> current = new HashMap<>(safeStatuses());
+            RobotSessionStatus status = current.get(event.robotId);
+            if (status != null) {
+                status.state = RobotSessionState.IN_ACTIVITY;
+                robotStatuses.postValue(current);
+            }
+            handleTurnDone(event);
+            return;
+        }
+
         RobotSessionState newState = null;
         if (AppConstants.MSG_SESSION_READY.equals(event.type))      newState = RobotSessionState.READY;
         if (AppConstants.MSG_SESSION_ENDED.equals(event.type))      newState = RobotSessionState.ENDED;
@@ -181,7 +230,194 @@ public class SessionViewModel extends AndroidViewModel {
         return p != null ? p.name : null;
     }
 
-    // --- privado ---
+    // =========================================================================
+    // TURNS COORDINATION (cooperative multi-robot emotion recognition)
+    // =========================================================================
+
+    /**
+     * Initializes the turn coordination for a multi-robot turns session.
+     * Generates N rounds of emotion data and sends the first round after a brief delay.
+     */
+    private void initTurnsCoordination(RobotViewModel robotViewModel, Session session) {
+        this.turnsRobotViewModel = robotViewModel;
+        this.turnsCurrentRound = 0;
+        this.turnsTotalRounds = 5; // default, could be configurable
+        this.turnsRounds = generateTurnsRounds(turnsTotalRounds);
+        this.turnsResponses.clear();
+
+        // Send the first round after robots have time to navigate to TurnsActivity
+        turnsHandler.postDelayed(() -> sendTurnsRound(session), 2000);
+    }
+
+    /**
+     * Generates N rounds of emotion recognition data.
+     * Each round has a correct emotion and 4 shuffled options.
+     */
+    private List<TurnsRoundData> generateTurnsRounds(int count) {
+        List<TurnsRoundData> rounds = new ArrayList<>();
+        List<String> pool = new ArrayList<>();
+        for (String e : EMOTION_POOL) pool.add(e);
+        String previousEmotion = null;
+
+        for (int i = 0; i < count; i++) {
+            List<String> candidates = new ArrayList<>(pool);
+            if (previousEmotion != null) candidates.remove(previousEmotion);
+            Collections.shuffle(candidates);
+
+            String correct = candidates.get(0);
+            previousEmotion = correct;
+
+            // Build 4 options: 1 correct + 3 distractors
+            List<String> distractors = new ArrayList<>(pool);
+            distractors.remove(correct);
+            Collections.shuffle(distractors);
+
+            List<String> options = new ArrayList<>();
+            options.add(correct);
+            for (int j = 0; j < 3 && j < distractors.size(); j++) {
+                options.add(distractors.get(j));
+            }
+            Collections.shuffle(options);
+
+            rounds.add(new TurnsRoundData(correct, options));
+        }
+        return rounds;
+    }
+
+    /**
+     * Sends the current round data as TURN_SIGNAL to all participating robots.
+     * Payload: {active: true, roundData: {emotionId, options[], correctOption, round, totalRounds}}
+     */
+    private void sendTurnsRound(Session session) {
+        if (turnsRobotViewModel == null || session == null) return;
+        if (turnsCurrentRound >= turnsTotalRounds || turnsCurrentRound >= turnsRounds.size()) return;
+
+        turnsResponses.clear();
+        TurnsRoundData roundData = turnsRounds.get(turnsCurrentRound);
+
+        try {
+            JSONObject roundDataJson = new JSONObject();
+            roundDataJson.put("emotionId", roundData.correctEmotionId);
+            JSONArray optionsArr = new JSONArray();
+            for (String opt : roundData.options) optionsArr.put(opt);
+            roundDataJson.put("options", optionsArr);
+            roundDataJson.put("correctOption", roundData.correctEmotionId);
+            roundDataJson.put("round", turnsCurrentRound + 1);
+            roundDataJson.put("totalRounds", turnsTotalRounds);
+
+            JSONObject payload = new JSONObject();
+            payload.put("active", true);
+            payload.put("roundData", roundDataJson);
+
+            JSONObject msg = new JSONObject();
+            msg.put("type", AppConstants.MSG_TURN_SIGNAL);
+            msg.put("payload", payload.toString());
+            String msgStr = msg.toString();
+
+            for (String robotId : session.participatingRobotIds) {
+                turnsRobotViewModel.sendMessage(robotId, msgStr);
+            }
+            Log.d(TAG, "Sent TURN_SIGNAL round " + (turnsCurrentRound + 1) + "/" + turnsTotalRounds);
+        } catch (JSONException e) {
+            Log.e(TAG, "Error construyendo TURN_SIGNAL", e);
+        }
+    }
+
+    /**
+     * Handles TURN_DONE from a robot.
+     * Waits for all robots to respond, then evaluates and sends result.
+     */
+    private void handleTurnDone(ActivityEvent event) {
+        Session session = currentSession.getValue();
+        if (session == null || turnsRobotViewModel == null) return;
+        if (!"activity_turns".equals(session.activityId)) return;
+
+        // Parse the selected option from payload
+        String selectedOption = null;
+        if (event.payload != null) {
+            try {
+                JSONObject payloadObj = new JSONObject(event.payload);
+                selectedOption = payloadObj.optString("selectedOption", null);
+            } catch (JSONException ignored) {}
+        }
+
+        turnsResponses.put(event.robotId, selectedOption);
+        Log.d(TAG, "TURN_DONE from " + event.robotId + " selected=" + selectedOption
+                + " (" + turnsResponses.size() + "/" + session.participatingRobotIds.size() + ")");
+
+        // Wait until ALL robots have responded
+        if (turnsResponses.size() < session.participatingRobotIds.size()) return;
+
+        // Evaluate: all must be correct
+        TurnsRoundData roundData = turnsCurrentRound < turnsRounds.size()
+                ? turnsRounds.get(turnsCurrentRound) : null;
+        if (roundData == null) return;
+
+        boolean allCorrect = true;
+        for (String response : turnsResponses.values()) {
+            if (!roundData.correctEmotionId.equals(response)) {
+                allCorrect = false;
+                break;
+            }
+        }
+
+        turnsCurrentRound++;
+        boolean isLastRound = turnsCurrentRound >= turnsTotalRounds;
+
+        // Send result to all robots
+        sendTurnsResult(session, allCorrect, isLastRound, roundData.correctEmotionId);
+
+        // Schedule next round (if any). Use longer delay on wrong to let robots finish
+        // their visual feedback (WRONG_ADVANCE_DELAY_MS = 4000ms in TurnsViewModel).
+        if (!isLastRound) {
+            long delay = allCorrect ? TURNS_NEXT_ROUND_DELAY_CORRECT_MS : TURNS_NEXT_ROUND_DELAY_WRONG_MS;
+            turnsHandler.postDelayed(() -> sendTurnsRound(session), delay);
+        }
+    }
+
+    /**
+     * Sends the round result to all robots.
+     * Payload: {active: false, result: "correct"/"wrong", correctOption: emotionId, lastRound: bool}
+     */
+    private void sendTurnsResult(Session session, boolean allCorrect, boolean lastRound, String correctOption) {
+        if (turnsRobotViewModel == null) return;
+
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("active", false);
+            payload.put("result", allCorrect ? "correct" : "wrong");
+            payload.put("correctOption", correctOption);
+            payload.put("lastRound", lastRound);
+
+            JSONObject msg = new JSONObject();
+            msg.put("type", AppConstants.MSG_TURN_SIGNAL);
+            msg.put("payload", payload.toString());
+            String msgStr = msg.toString();
+
+            for (String robotId : session.participatingRobotIds) {
+                turnsRobotViewModel.sendMessage(robotId, msgStr);
+            }
+            Log.d(TAG, "Sent TURN_SIGNAL result=" + (allCorrect ? "correct" : "wrong")
+                    + " lastRound=" + lastRound);
+        } catch (JSONException e) {
+            Log.e(TAG, "Error construyendo TURN_SIGNAL result", e);
+        }
+    }
+
+    /** Data class for a single turns round. */
+    private static class TurnsRoundData {
+        final String correctEmotionId;
+        final List<String> options; // 4 options (shuffled, one is correct)
+
+        TurnsRoundData(String correctEmotionId, List<String> options) {
+            this.correctEmotionId = correctEmotionId;
+            this.options = options;
+        }
+    }
+
+    // =========================================================================
+    // PRIVATE helpers
+    // =========================================================================
 
     private void persistSessionRecord(Session session) {
         try {
@@ -202,7 +438,7 @@ public class SessionViewModel extends AndroidViewModel {
             );
             sessionRecordRepository.saveSession(record);
         } catch (JSONException e) {
-            android.util.Log.e("SessionViewModel", "Error persistiendo SessionRecord", e);
+            Log.e(TAG, "Error persistiendo SessionRecord", e);
         }
     }
 
@@ -242,7 +478,7 @@ public class SessionViewModel extends AndroidViewModel {
             msg.put("payload", payload.toString());
             return msg.toString();
         } catch (JSONException e) {
-            android.util.Log.e("SessionViewModel", "Error construyendo SESSION_START", e);
+            Log.e(TAG, "Error construyendo SESSION_START", e);
             return "";
         }
     }
@@ -250,7 +486,7 @@ public class SessionViewModel extends AndroidViewModel {
 
     /**
      * Builds the activityContent JSON for each activity type.
-     * Includes scenarios for Social, steps/items for Emotion and Sequence.
+     * Includes scenarios for Social, steps/items for Emotion, Sequence and Turns.
      */
     private JSONObject buildActivityContent(String activityId) throws JSONException {
         if (activityId == null) return null;
@@ -261,6 +497,8 @@ public class SessionViewModel extends AndroidViewModel {
                 return buildEmotionContent();
             case "activity_sequence":
                 return buildSequenceContent();
+            case "activity_turns":
+                return buildTurnsContent();
             case "activity_communicator":
                 // Communicator doesn't need activityContent — catalog is hardcoded in app
                 return null;
@@ -274,18 +512,22 @@ public class SessionViewModel extends AndroidViewModel {
         JSONObject content = new JSONObject();
         content.put("steps", 5);
         JSONArray items = new JSONArray();
-        items.put("emotion_happy");
-        items.put("emotion_sad");
-        items.put("emotion_angry");
-        items.put("emotion_surprised");
-        items.put("emotion_scared");
-        items.put("emotion_disgusted");
-        items.put("emotion_calm");
-        items.put("emotion_shy");
-        items.put("emotion_bored");
-        items.put("emotion_tired");
-        items.put("emotion_excited");
-        items.put("emotion_terror");
+        for (String e : EMOTION_POOL) items.put(e);
+        content.put("items", items);
+        return content;
+    }
+
+
+    /**
+     * Builds activityContent for Turns Sociales.
+     * Includes the same 12 emotions as Emociones and a steps count.
+     * AppTerapeuta coordinates via TURN_SIGNAL (requires 2+ robots).
+     */
+    private JSONObject buildTurnsContent() throws JSONException {
+        JSONObject content = new JSONObject();
+        content.put("steps", 5);
+        JSONArray items = new JSONArray();
+        for (String e : EMOTION_POOL) items.put(e);
         content.put("items", items);
         return content;
     }

@@ -38,6 +38,10 @@ public class AppConstants {
     public static final String MSG_TERAPEUTA_PICTOGRAM_MESSAGE = "TERAPEUTA_PICTOGRAM_MESSAGE";
     public static final String MSG_STUDENT_PICTOGRAM_RESPONSE  = "STUDENT_PICTOGRAM_RESPONSE";
 
+    // Turnos cooperativos
+    public static final String MSG_TURN_SIGNAL = "TURN_SIGNAL";
+    public static final String MSG_TURN_DONE   = "TURN_DONE";
+
     // Seguridad: detección de vuelco
     public static final String MSG_TILT_ALERT = "TILT_ALERT";
 }
